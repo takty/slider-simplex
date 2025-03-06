@@ -1,0 +1,1 @@
+import{s as e}from"./slider-simplex-D6xXYD2C.js";/* empty css              */e("ss0",{effect_type:"slide"});e("ss1",{effect_type:"scroll",side_slide_visible:!0});e("ss2",{effect_type:"fade"});e("ss-v",{effect_type:"slide"});window.fn=e("ss-b",{effect_type:"scroll"});e("ss-ecs",{effect_type:"scroll",side_slide_visible:!0});

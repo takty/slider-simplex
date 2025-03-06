@@ -1,0 +1,41 @@
+{
+	"name": "slider-simplex",
+	"version": "1.0.0",
+	"description": "Flexible Slider Component",
+	"license": "MIT",
+	"author": "Takuto Yanagida",
+	"type": "module",
+	"homepage": "https://github.com/takty/slider-simplex#readme",
+	"keywords": [
+		"js",
+		"css",
+		"html",
+		"style"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/takty/slider-simplex.git"
+	},
+	"bugs": {
+		"url": "https://github.com/takty/slider-simplex/issues"
+	},
+	"browserslist": [
+		"> 1%",
+		"last 2 versions",
+		"not dead"
+	],
+	"scripts": {
+		"build": "node ./build.js",
+		"docs": "vite build",
+		"dev": "vite src/_docs --base ./",
+		"debug": "tsc --noEmit -w"
+	},
+	"packageManager": "yarn@1.22.22",
+	"devDependencies": {
+		"esbuild": "^0.24.0",
+		"esbuild-sass-plugin": "^3.3.1",
+		"sass": "^1.79.3",
+		"typescript": "^5.6.2",
+		"vite": "^5.4.8"
+	}
+}
