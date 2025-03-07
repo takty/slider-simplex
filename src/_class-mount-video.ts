@@ -2,7 +2,7 @@
  * Mount Video
  *
  * @author Takuto Yanagida
- * @version 2025-03-05
+ * @version 2025-03-07
  */
 
 export class MountVideo {
@@ -25,20 +25,7 @@ export class MountVideo {
 			this.#initialize(v as HTMLVideoElement);
 			this.#elm.appendChild(v);
 			this.#video = v as HTMLVideoElement;
-		} else if (li.dataset.video) {
-			const v: HTMLVideoElement = this.#createVideo(li);
-			this.#initialize(v);
-			this.#elm.appendChild(v);
-			this.#video = v;
 		}
-	}
-
-	#createVideo(li: HTMLLIElement): HTMLVideoElement {
-		const v: HTMLVideoElement  = document.createElement('video');
-		const s: HTMLSourceElement = document.createElement('source');
-		s.setAttribute('src', li.dataset.video as string);
-		v.appendChild(s);
-		return v;
 	}
 
 	#initialize(v: HTMLVideoElement): void {

@@ -2,7 +2,7 @@
  * Slide
  *
  * @author Takuto Yanagida
- * @version 2022-11-03
+ * @version 2025-03-07
  */
 
 import { Caption } from './_class-caption';
@@ -44,7 +44,6 @@ export class Slide {
 	}
 
 	#isVideo(li: HTMLLIElement): boolean {
-		if (li.dataset.video) return true;
 		const v = li.querySelector(':scope > video, :scope > a > video');
 		return null !== v;
 	}

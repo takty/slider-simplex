@@ -2,7 +2,7 @@
  * Mount Picture
  *
  * @author Takuto Yanagida
- * @version 2022-11-03
+ * @version 2025-03-07
  */
 
 export class MountPicture {
@@ -27,26 +27,7 @@ export class MountPicture {
 				this.#elm.classList.add(MountPicture.CLS_DUAL);
 				this.#elm.appendChild(is[1]);
 			}
-		} else if (li.dataset.img) {
-			const i = this.#createImage(li, { src: 'img', srcset: 'imgSrcset', sizes: 'imgSizes' });
-			this.#elm.appendChild(i);
-			if (li.dataset.imgSub) {
-				this.#elm.classList.add(MountPicture.CLS_DUAL);
-				const i = this.#createImage(li, { src: 'imgSub', srcset: 'imgSubSrcset', sizes: 'imgSubSizes' });
-				this.#elm.appendChild(i);
-			}
 		}
-	}
-
-	#createImage(li: HTMLLIElement, keys: any): HTMLImageElement {
-		const i: HTMLImageElement = document.createElement('img');
-		i.src = li.dataset[keys.src] as string;
-
-		const srcset = li.dataset[keys.srcset] ?? null;
-		const sizes  = li.dataset[keys.sizes]  ?? null;
-		if (srcset) i.srcset = srcset;
-		if (sizes)  i.sizes  = sizes;
-		return i;
 	}
 
 	getElement(): HTMLDivElement {

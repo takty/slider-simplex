@@ -19,6 +19,7 @@ export class Caption {
 	}
 
 	#elm: HTMLDivElement;
+	#caption: string = Caption.CLS_SUBTITLE;
 
 	constructor(elm: HTMLDivElement) {
 		this.#elm = elm;
@@ -30,9 +31,9 @@ export class Caption {
 		if (!elm.classList.contains(Caption.CLS_LINE) && !elm.classList.contains(Caption.CLS_CIRCLE)) {
 			elm.classList.add(Caption.CLS_SUBTITLE);
 		}
-		if (elm.classList.contains(Caption.CLS_LINE))     elm.dataset.caption = Caption.CLS_LINE;
-		if (elm.classList.contains(Caption.CLS_CIRCLE))   elm.dataset.caption = Caption.CLS_CIRCLE;
-		if (elm.classList.contains(Caption.CLS_SUBTITLE)) elm.dataset.caption = Caption.CLS_SUBTITLE;
+		if (elm.classList.contains(Caption.CLS_LINE))     this.#caption = Caption.CLS_LINE;
+		if (elm.classList.contains(Caption.CLS_CIRCLE))   this.#caption = Caption.CLS_CIRCLE;
+		if (elm.classList.contains(Caption.CLS_SUBTITLE)) this.#caption = Caption.CLS_SUBTITLE;
 
 		const ds = elm.querySelectorAll(':scope > div');
 		for (const d of ds) this.#wrapText(d as HTMLDivElement);
@@ -82,11 +83,11 @@ export class Caption {
 
 	onResize() {
 		if (window.innerWidth < 600) {
-			this.#elm.classList.remove(this.#elm.dataset.caption as string);
+			this.#elm.classList.remove(this.#caption);
 			this.#elm.classList.add(Caption.CLS_SUBTITLE);
 		} else {
 			this.#elm.classList.remove(Caption.CLS_SUBTITLE);
-			this.#elm.classList.add(this.#elm.dataset.caption as string);
+			this.#elm.classList.add(this.#caption);
 		}
 	}
 }
