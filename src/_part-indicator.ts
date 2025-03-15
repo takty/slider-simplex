@@ -2,23 +2,30 @@
  * Indicators
  *
  * @author Takuto Yanagida
- * @version 2025-03-05
+ * @version 2025-03-13
  */
 
-const NS            = 'slider-simplex';
-const CLS_SLIDE_CNT = NS + '-slide-count';
-const CLS_SLIDE_IDX = NS + '-slide-index';
+const CLS_SLIDE_CNT = 'slide-count';
+const CLS_SLIDE_IDX = 'slide-index';
 
-let slideCntElms: HTMLElement[] = [];
-let slideIdxElms: HTMLElement[] = [];
+export class Indicator {
 
-export function initIndicators(size: number, root: HTMLElement): void {
-	slideCntElms = root.querySelectorAll('.' + CLS_SLIDE_CNT) as unknown as HTMLElement[];
-	slideIdxElms = root.querySelectorAll('.' + CLS_SLIDE_IDX) as unknown as HTMLElement[];
-	for (const elm of slideCntElms) elm.innerHTML = '' + size;
-	for (const elm of slideIdxElms) elm.innerHTML = '' + 1;
-}
+	#ies: HTMLElement[] = [];
 
-export function transitionIndicators(idx: number): void {
-	for (const elm of slideIdxElms) elm.innerHTML = '' + (idx + 1);
+	constructor(root: HTMLElement, size: number) {
+		const ces = root.querySelectorAll('.' + CLS_SLIDE_CNT) as any as HTMLElement[];
+		for (const elm of ces) {
+			elm.innerHTML = '' + size;
+		}
+		this.#ies = root.querySelectorAll('.' + CLS_SLIDE_IDX) as any as HTMLElement[];
+		for (const elm of this.#ies) {
+			elm.innerHTML = '' + 1;
+		}
+	}
+
+	transition(idx: number): void {
+		for (const e of this.#ies) {
+			e.innerHTML = '' + (idx + 1);
+		}
+	}
 }

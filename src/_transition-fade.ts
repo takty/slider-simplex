@@ -2,7 +2,7 @@
  * Fade Transition
  *
  * @author Takuto Yanagida
- * @version 2021-06-25
+ * @version 2025-03-15
  */
 
 import { asyncTimeout } from './_common';

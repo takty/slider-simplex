@@ -2,16 +2,16 @@
  * Slider Simplex - Show
  *
  * @author Takuto Yanagida
- * @version 2022-11-04
+ * @version 2025-03-14
  */
 
 import { Slide } from './_class-slide';
 import { asyncTimeout, initViewportDetection, onLoad, initResizeEventHandler, onResize } from './_common';
-import { initButtons } from './_part-button';
-import { initRivets, transitionRivets } from './_part-rivet';
-import { initIndicators, transitionIndicators } from './_part-indicator';
-import { initThumbnails, transitionThumbnails } from './_part-thumbnail.js';
-import { initBackgrounds, transitionBackgrounds } from './_part-background.js';
+import { Navigation } from './_part-navigation';
+import { Pagination } from './_part-pagination';
+import { Indicator } from './_part-indicator';
+import { Selector } from './_part-selector.js';
+import { Background } from './_part-background.js';
 
 import { Transition } from './_transition';
 import { TransitionFade } from './_transition-fade';
@@ -19,8 +19,9 @@ import { TransitionSlide } from './_transition-slide';
 import { TransitionScroll } from './_transition-scroll';
 
 const NS          = 'slider-simplex';
-const CLS_FRAME   = NS + '-frame';
-const CLS_SLIDES  = NS + '-slides';
+const CLS_FRAME   = 'frame';
+const CLS_SLIDES  = 'slides';
+
 const CLS_START   = 'start';
 const CLS_VIEW    = 'view';
 const CLS_PAUSE   = 'pause';
@@ -38,120 +39,161 @@ interface SliderOptions {
 }
 
 export function slider_show(id: string, opts: SliderOptions = {}) {
-	const root: HTMLElement = id ? document.getElementById(id) as HTMLElement : document.getElementsByClassName(NS)[0] as HTMLElement;
-	if (!root) return;
-
-	const isShow: boolean = opts?.is_show ?? true;
-
-	const effectType  : string  = opts?.effect_type     ?? 'slide';  // 'scroll' or 'fade'
-	const timeDur     : number  = opts?.duration_time   ?? 8;  // [second]
-	const timeTran    : number  = opts?.transition_time ?? 1;  // [second]
-	const randomTiming: boolean = opts?.random_timing   ?? false;
-
-	let bgVisible: boolean = false;
-	let sideVisible: boolean = false;
-	if (isShow) {
-		bgVisible      = opts?.background_visible ?? true;
-		sideVisible    = opts?.side_slide_visible ?? false;
-
-		root.style.setProperty('--transition-time', `${timeTran}s`);
-
-		if (effectType !== 'scroll') sideVisible = false;
-		if (sideVisible) {
-			bgVisible = false;
-			const ss = root.querySelector('.' + CLS_SLIDES) as HTMLElement;
-			ss.style.overflow = 'visible';
-		}
+	const root = id ? document.getElementById(id) as HTMLElement : document.getElementsByClassName(NS)[0] as HTMLElement;
+	if (root) {
+		return new Slider(root, opts);
 	}
+	return null;
+}
 
-	const lis: HTMLLIElement[] = Array.prototype.slice.call(root.querySelectorAll(`.${CLS_SLIDES} > li`));
-	const size: number = lis.length;
-	const sss: Slide[] = [];
-	let effect!: Transition;
+export class Slider {
 
-	let onTransitionEnd: (() => void) | null = null;
+	root  : HTMLElement;
+	isShow: boolean;
 
+	effectType  : string
+	timeDur     : number
+	timeTran    : number
+	randomTiming: boolean
 
-	// -------------------------------------------------------------------------
+	bgVisible  : boolean;
+	sideVisible: boolean;
 
+	lis    : HTMLLIElement[];
+	size   : number;
+	sss    : Slide[] = [];
+	effect!: Transition;
 
-	const hasVideo = initSlides();
-	if (isShow) {
-		if (bgVisible) initBackgrounds(size, root, lis);
-	}
-	if (hasVideo) setTimeout(tryResizeVideo, 100);
-	function tryResizeVideo() {
-		const finish = onResizeSlide();
-		if (!finish) setTimeout(tryResizeVideo, 100);
-	}
-	if (isShow) {
-		const frame = root.getElementsByClassName(CLS_FRAME)[0] as HTMLElement;
-		if (0 < navigator.maxTouchPoints) {
-			frame.addEventListener('pointerenter', (e: PointerEvent): void => {
-				const m = (e.pointerType === 'mouse') ? 'remove' : 'add';
-				frame.classList[m]('touch');
-			}, { once: true });
-		}
-	}
-	onLoad(() => {
-		initResizeEventHandler();
-		if (isShow) {
-			initButtons(timeTran, size, root, transition);
-			initThumbnails(id, size);
-			initIndicators(size, root);
-			initRivets(id, size, root, transition);
-		}
-		initViewportDetection(root, CLS_VIEW, OFFSET_VIEW);
+	onTransitionEnd: (() => void) | null = null;
 
-		transition(0, 0);
-		console.log(`Slider Simplex - Show (#${id}): started`);
-		setTimeout(() => root.classList.add(CLS_START), 0);
-	});
+	selector  : Selector   | null = null;
+	indicator : Indicator  | null = null;
+	pagination: Pagination | null = null;
+	background: Background | null = null;
 
+	constructor(root: HTMLElement, opts: SliderOptions = {}) {
+		this.root = root;
 
-	// -------------------------------------------------------------------------
+		this.isShow = opts?.is_show ?? true;
 
+		this.effectType   = opts?.effect_type     ?? 'slide';  // 'scroll' or 'fade'
+		this.timeDur      = opts?.duration_time   ?? 8;  // [second]
+		this.timeTran     = opts?.transition_time ?? 1;  // [second]
+		this.randomTiming = opts?.random_timing   ?? false;
 
-	function initSlides() {
-		if (isShow) {
-			if (effectType === 'scroll' && 1 < size && size < 5) {
-				cloneLis();
-				if (size === 2) cloneLis();
+		this.bgVisible   = false;
+		this.sideVisible = false;
+		if (this.isShow) {
+			this.bgVisible      = opts?.background_visible ?? true;
+			this.sideVisible    = opts?.side_slide_visible ?? false;
+
+			this.root.style.setProperty('--transition-time', `${this.timeTran}s`);
+
+			if (this.effectType !== 'scroll') this.sideVisible = false;
+			if (this.sideVisible) {
+				this.bgVisible = false;
+				const ss = this.root.querySelector('.' + CLS_SLIDES) as HTMLElement;
+				ss.style.overflow = 'visible';
 			}
 		}
-		const isScroll = root.classList.contains(CLS_SCROLL);
+
+		this.lis  = Array.prototype.slice.call(this.root.querySelectorAll(`.${CLS_SLIDES} > li`));
+		this.size = this.lis.length;
+
+
+		// -------------------------------------------------------------------------
+
+
+		const hasVideo = this.initSlides();
+		if (this.isShow) {
+			if (this.bgVisible) this.background = new Background(this.root, this.lis);
+		}
+		const tryResizeVideo = () => {
+			const finish: boolean = this.onResizeSlide();
+			if (!finish) setTimeout(tryResizeVideo, 100);
+		}
+		if (hasVideo) setTimeout(tryResizeVideo, 100);
+		if (this.isShow) {
+			if (0 < navigator.maxTouchPoints) {
+				const frame = this.root.getElementsByClassName(CLS_FRAME)[0] as HTMLElement;
+				frame.addEventListener('pointerenter', (e: PointerEvent): void => {
+					const m = (e.pointerType === 'mouse') ? 'remove' : 'add';
+					this.root.classList[m]('touch');
+				}, { once: true });
+			}
+		}
+
+		onLoad(() => {
+			initResizeEventHandler();
+			if (this.isShow) {
+				Navigation.create(this.root, this.size, (idx: number, dir: number) => this.transition(idx, dir), this.timeTran);
+				this.selector   = new Selector(this.root, this.lis, this.size, (idx: number, dir: number) => this.transition(idx, dir));
+				this.indicator  = new Indicator(this.root, this.size);
+				this.pagination = Pagination.create(this.root, this.size, (idx: number, dir: number) => this.transition(idx, dir));
+			}
+			initViewportDetection(this.root, CLS_VIEW, OFFSET_VIEW);
+
+			this.transition(0, 0);
+			console.log(`Slider Simplex - Show (#${this.root.id}): started`);
+			setTimeout(() => this.root.classList.add(CLS_START), 0);
+		});
+	}
+
+	getController() {
+		const fs = {
+			move: (idx: number) => this.transition(idx, this.size === 2 ? 1 : 0),
+			next: ()  => this.transition((this.curIdx === this.size - 1) ? 0          : (this.curIdx + 1),  1),
+			prev: ()  => this.transition((this.curIdx === 0       ) ? (this.size - 1) : (this.curIdx - 1), -1),
+
+			onTransitionEnd: (fn: () => void): void => { this.onTransitionEnd = fn; }
+		};
+		return fs;
+	}
+
+
+	// -------------------------------------------------------------------------
+
+
+	initSlides() {
+		if (this.isShow) {
+			if (this.effectType === 'scroll' && 1 < this.size && this.size < 5) {
+				this.cloneLis();
+				if (this.size === 2) this.cloneLis();
+			}
+		}
+		const isScroll = this.root.classList.contains(CLS_SCROLL);
 		let hasVideo = false;
 
-		for (let i = 0; i < lis.length; i += 1) {
-			if (isScroll) lis[i].classList.add(CLS_SCROLL);
+		for (let i = 0; i < this.lis.length; i += 1) {
+			if (isScroll) this.lis[i].classList.add(CLS_SCROLL);
 
-			const ss = new Slide(lis[i], i);
+			const ss = new Slide(this.lis[i], i);
 			if ('video' === ss.getType()) hasVideo = true;
-			sss.push(ss);
+			this.sss.push(ss);
 		}
-		onResize(onResizeSlide, true);
-		switch (effectType) {
-			case 'slide' : effect = new TransitionSlide(size, lis, timeTran); break;
-			case 'scroll': effect = new TransitionScroll(size, lis, timeTran); break;
-			case 'fade'  : effect = new TransitionFade(size, lis, timeTran); break;
-			default      : effect = new TransitionSlide(size, lis, timeTran); break;
+		onResize(() => this.onResizeSlide(), true);
+		switch (this.effectType) {
+			case 'slide' : this.effect = new TransitionSlide(this.size, this.lis, this.timeTran); break;
+			case 'scroll': this.effect = new TransitionScroll(this.size, this.lis, this.timeTran); break;
+			case 'fade'  : this.effect = new TransitionFade(this.size, this.lis, this.timeTran); break;
+			default      : this.effect = new TransitionSlide(this.size, this.lis, this.timeTran); break;
 		}
 		return hasVideo;
 	}
 
-	function onResizeSlide() {
+	onResizeSlide() {
 		let finish = true;
-		for (const ss of sss) {
+		for (const ss of this.sss) {
 			if (!ss.onResize()) finish = false;
 		}
 		return finish;
 	}
 
-	function cloneLis() {
-		for (let i = 0; i < size; i += 1) {
-			const li: HTMLLIElement = lis[i];
+	cloneLis() {
+		for (let i = 0; i < this.size; i += 1) {
+			const li: HTMLLIElement = this.lis[i];
 			const nls = li.cloneNode(true) as HTMLLIElement;
-			lis.push(nls);
+			this.lis.push(nls);
 			li.parentNode?.appendChild(nls);
 		}
 	}
@@ -160,78 +202,65 @@ export function slider_show(id: string, opts: SliderOptions = {}) {
 	// -------------------------------------------------------------------------
 
 
-	let curIdx   : number        = 0;
-	let stStep   : { set: () => Promise<void>, clear: () => void } | null = null;
-	let last     : number        = 0;
-	let stReserve: number | null = null;
+	curIdx   : number        = 0;
+	stStep   : { set: () => Promise<void>, clear: () => void } | null = null;
+	last     : number        = 0;
+	stReserve: number | null = null;
 
-	async function transition(idx: number | null, dir: number): Promise<void> {
-		[idx, dir] = getIdxDir(idx, dir);
+	async transition(idx: number, dir: number): Promise<void> {
+		[idx, dir] = this.getIdxDir(idx, dir);
 
 		const t = window.performance.now();
-		if (dir !== 0 && t - last < timeTran * 1000) {
-			if (stReserve) clearTimeout(stReserve);
-			stReserve = setTimeout(() => transition(idx, dir), timeTran * 1000 - (t - last));
+		if (dir !== 0 && t - this.last < this.timeTran * 1000) {
+			if (this.stReserve) clearTimeout(this.stReserve);
+			this.stReserve = setTimeout(() => this.transition(idx, dir), this.timeTran * 1000 - (t - this.last));
 			return;
 		}
-		last = t;
+		this.last = t;
 
-		for (const ss of sss) ss.onPreDisplay(idx, size);
-		for (const ss of sss) ss.transition(idx, size);
-		if (isShow) {
-			transitionBackgrounds(idx, size);
-			transitionThumbnails(idx);
-			transitionIndicators(idx);
-			transitionRivets(idx);
+		for (const ss of this.sss) ss.onPreDisplay(idx, this.size);
+		for (const ss of this.sss) ss.transition(idx, this.size);
+		if (this.isShow) {
+			if (this.background) this.background.transition(idx);
+			if (this.selector)   this.selector.transition(idx);
+			if (this.indicator)  this.indicator.transition(idx);
+			if (this.pagination) this.pagination.transition(idx);
 		}
-		await effect.transition(idx, dir);
-		if (onTransitionEnd) onTransitionEnd();
-		curIdx = idx;
-		display(idx);
+		await this.effect.transition(idx, dir);
+		if (this.onTransitionEnd) this.onTransitionEnd();
+		this.curIdx = idx;
+		this.display(idx);
 	}
 
-	async function display(idx: number) {
-		for (const ss of sss) ss.display(idx, size);
-		if (size === 1) return;
+	async display(idx: number) {
+		for (const ss of this.sss) ss.display(idx, this.size);
+		if (this.size === 1) return;
 
-		const dt = sss[idx].getDuration(timeDur, timeTran, randomTiming);
-		if (stStep) stStep.clear();
-		stStep = asyncTimeout(Math.ceil(dt * 1000), step);
-		await stStep.set();
+		const dt = this.sss[idx].getDuration(this.timeDur, this.timeTran, this.randomTiming);
+		if (this.stStep) this.stStep.clear();
+		this.stStep = asyncTimeout(Math.ceil(dt * 1000), this.step);
+		await this.stStep.set();
 	}
 
-	async function step() {
-		if (root.classList.contains(CLS_VIEW) && !root.classList.contains(CLS_PAUSE)) {
-			transition(null, 1);
+	async step() {
+		if (this.root.classList.contains(CLS_VIEW) && !this.root.classList.contains(CLS_PAUSE)) {
+			this.transition(-1, 1);
 		} else {
-			asyncTimeout(timeDur * 1000, step).set();
+			asyncTimeout(this.timeDur * 1000, this.step).set();
 		}
 	}
 
-	function getIdxDir(idx: number | null, dir: number) {
-		if (idx === null) {
-			idx = curIdx + dir;
-			if (size - 1 < idx) idx = 0;
-			if (idx < 0) idx = size - 1;
-		} else if (dir === 0 && curIdx !== idx) {
-			const r = (curIdx < idx) ? idx - curIdx : idx + size - curIdx;
-			const l = (idx < curIdx) ? curIdx - idx : curIdx + size - idx;
+	getIdxDir(idx: number, dir: number): [number, number] {
+		if (idx === -1) {
+			idx = this.curIdx + dir;
+			if (this.size - 1 < idx) idx = 0;
+			if (idx < 0) idx = this.size - 1;
+		} else if (dir === 0 && this.curIdx !== idx) {
+			const r = (this.curIdx < idx) ? idx - this.curIdx : idx + this.size - this.curIdx;
+			const l = (idx < this.curIdx) ? this.curIdx - idx : this.curIdx + this.size - idx;
 			dir = (l < r) ? -1 : 1;
 		}
 		return [idx, dir];
 	}
-
-
-	// -------------------------------------------------------------------------
-
-
-	const fs = {
-		move: (idx: number) => transition(idx, size === 2 ? 1 : 0),
-		next: ()  => transition((curIdx === size - 1) ? 0          : (curIdx + 1),  1),
-		prev: ()  => transition((curIdx === 0       ) ? (size - 1) : (curIdx - 1), -1),
-
-		onTransitionEnd: (fn: () => void): void => { onTransitionEnd = fn; }
-	};
-	return fs;
 
 }

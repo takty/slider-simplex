@@ -2,7 +2,7 @@
  * Scroll Transition
  *
  * @author Takuto Yanagida
- * @version 2022-11-02
+ * @version 2025-03-15
  */
 
 import { asyncTimeout } from './_common';
@@ -10,9 +10,9 @@ import { Transition } from './_transition';
 
 export class TransitionScroll extends Transition {
 
-	_cur: number;
+	_cur   : number;
 	_curPsd: number;
-	_doing: boolean;
+	_doing : boolean;
 	_queue!: ((cur: number, curPsd: number) => Promise<[number, number]>)[];
 
 	constructor(size: number, slides: HTMLLIElement[], tranTime: number) {

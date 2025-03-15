@@ -1,53 +1,46 @@
 /**
- * Mount Video
+ * Video Mount
  *
  * @author Takuto Yanagida
- * @version 2025-03-07
+ * @version 2025-03-15
  */
 
-export class MountVideo {
+import { Mount } from './_class-mount';
 
-	static NS = 'slider-simplex';
+const CLS_VIDEO = 'video';
 
-	static CLS_VIDEO = MountVideo.NS + '-video';
+export class MountVideo extends Mount {
 
-	#elm   : HTMLDivElement;
 	#video!: HTMLVideoElement;
 	#ar    : number | null = null;
 
 	constructor(li: HTMLLIElement) {
-		this.#elm = document.createElement('div');
-		this.#elm.classList.add(MountVideo.CLS_VIDEO);
+		super(li);
+		this.elm.classList.add(CLS_VIDEO);
 
 		const vs = li.querySelectorAll(':scope > video, :scope > a > video');
 		if (1 === vs.length) {
-			const v = vs[0];
-			this.#initialize(v as HTMLVideoElement);
-			this.#elm.appendChild(v);
-			this.#video = v as HTMLVideoElement;
+			const v = vs[0] as HTMLVideoElement;
+			v.muted       = true;
+			v.playsInline = true;
+			v.setAttribute('muted', 'true');
+			v.setAttribute('playsinline', 'true');
+			v.addEventListener('loadedmetadata', (): void => {
+				const ar: number = v.clientWidth / v.clientHeight;
+				this.#ar = (0 | (ar * 1000)) / 1000;
+			});
+			this.#video = v;
+			this.elm.appendChild(v);
 		}
-	}
-
-	#initialize(v: HTMLVideoElement): void {
-		v.muted       = true;
-		v.playsInline = true;
-		v.setAttribute('muted', 'true');
-		v.setAttribute('playsinline', 'true');
-		v.addEventListener('loadedmetadata', (): void => {
-			const ar = v.clientWidth / v.clientHeight;
-			this.#ar = (0 | (ar * 1000)) / 1000;
-		});
-	}
-
-	getElement(): HTMLDivElement {
-		return this.#elm;
 	}
 
 	transition(isCur: boolean, size: number): void {
 		if (isCur) {
 			this.#video.setAttribute('autoplay', 'true');
 			this.#video.play();
-			if (size === 1) this.#video.setAttribute('loop', 'true');
+			if (size === 1) {
+				this.#video.setAttribute('loop', 'true');
+			}
 		}
 	}
 
@@ -64,7 +57,7 @@ export class MountVideo {
 
 	onResize(): boolean {
 		if (!this.#ar) return false;
-		const arFrame = this.#elm.clientWidth / this.#elm.clientHeight;
+		const arFrame = this.elm.clientWidth / this.elm.clientHeight;
 		if (this.#ar < arFrame) {
 			this.#video.classList.remove('height');
 			this.#video.classList.add('width');

@@ -2,92 +2,107 @@
  * Caption
  *
  * @author Takuto Yanagida
- * @version 2022-11-03
+ * @version 2025-03-14
  */
+
+const CLS_CAPTION = 'caption';
+
+const CLS_SUBTITLE = 'subtitle';
+const CLS_CIRCLE   = 'circle';
+const CLS_LINE     = 'line';
+const CLS_CUSTOM   = 'custom';
 
 export class Caption {
 
-	static CLS_CAP = '-caption';
-
-	static CLS_SUBTITLE = 'subtitle';
-	static CLS_CIRCLE   = 'circle';
-	static CLS_LINE     = 'line';
-
-	static create(li: HTMLLIElement) {
-		const elm = li.querySelector(':scope > div, :scope > a > div');
-		return elm ? new Caption(elm as HTMLDivElement) : null;
+	static create(li: HTMLElement): Caption | null {
+		const elm: HTMLElement | null = li.querySelector(':scope > div, :scope > a > div');
+		if (elm) {
+			 return new Caption(elm as HTMLElement);
+		}
+		return null;
 	}
 
-	#elm: HTMLDivElement;
-	#caption: string = Caption.CLS_SUBTITLE;
+	#e: HTMLElement;
+	#type: string = CLS_SUBTITLE;
 
-	constructor(elm: HTMLDivElement) {
-		this.#elm = elm;
+	constructor(e: HTMLElement) {
+		this.#e = e;
 
-		if ('' === elm.className) {
-			elm.classList.add(Caption.CLS_CAP);
-			elm.classList.add(Caption.CLS_SUBTITLE);
+		if (!e.classList.contains(CLS_CAPTION)) {
+			e.classList.add(CLS_CAPTION);
 		}
-		if (!elm.classList.contains(Caption.CLS_LINE) && !elm.classList.contains(Caption.CLS_CIRCLE)) {
-			elm.classList.add(Caption.CLS_SUBTITLE);
+		if (!e.classList.contains(CLS_LINE) && !e.classList.contains(CLS_CIRCLE) && !e.classList.contains(CLS_CUSTOM)) {
+			e.classList.add(CLS_SUBTITLE);
 		}
-		if (elm.classList.contains(Caption.CLS_LINE))     this.#caption = Caption.CLS_LINE;
-		if (elm.classList.contains(Caption.CLS_CIRCLE))   this.#caption = Caption.CLS_CIRCLE;
-		if (elm.classList.contains(Caption.CLS_SUBTITLE)) this.#caption = Caption.CLS_SUBTITLE;
+		if (e.classList.contains(CLS_LINE))     this.#type = CLS_LINE;
+		if (e.classList.contains(CLS_CIRCLE))   this.#type = CLS_CIRCLE;
+		if (e.classList.contains(CLS_SUBTITLE)) this.#type = CLS_SUBTITLE;
+		if (e.classList.contains(CLS_CUSTOM))   this.#type = CLS_CUSTOM;
 
-		const ds = elm.querySelectorAll(':scope > div');
-		for (const d of ds) this.#wrapText(d as HTMLDivElement);
-		this.#wrapText(elm);
-		this.#wrapDiv(elm);
-	}
-
-	#wrapText(elm: HTMLDivElement) {
-		for (const n of Array.from(elm.childNodes)) {
-			if (3 === n.nodeType) {  // TEXT_NODE
-				const str = (n as Text).nodeValue?.trim() ?? '';
-				if ('' !== str) {
-					const e = document.createElement('span');
-					e.appendChild(document.createTextNode(str));
-					n.parentNode?.replaceChild(e, n);
-				}
-			}
+		this.#wrap(e);
+		for (const d of e.querySelectorAll(':scope > div')) {
+			this.#wrapWithSpan(d as HTMLElement);
 		}
 	}
 
-	#wrapDiv(elm: HTMLDivElement) {
-		const tags = [];
+	#wrap(elm: HTMLElement): void {
+		const ns: Node[] = [];
+
 		for (const n of Array.from(elm.childNodes)) {
 			if (1 === n.nodeType) {  // ELEMENT_NODE
 				if ('DIV' === (n as Element).tagName) {
-					if (tags.length) {
-						const e = document.createElement('div');
-						for (const t of tags) e.appendChild(elm.removeChild(t));
-						elm.insertBefore(e, n);
-						tags.length = 0;
-					}
+					this.#wrapAndReplaceNodes(elm, ns, n);
+				} else if ('BR' === (n as Element).tagName) {
+					this.#wrapAndReplaceNodes(elm, ns, n);
+					elm.removeChild(n);
 				} else {
-					tags.push(n);
+					ns.push(n);
+				}
+			} else {
+				const str: string = (n as Text).nodeValue?.trim() ?? '';
+				if (str.length) {
+					ns.push(n);
 				}
 			}
 		}
-		if (tags.length) {
-			const e = document.createElement('div');
-			for (const t of tags) e.appendChild(elm.removeChild(t));
-			elm.appendChild(e);
+		this.#wrapAndReplaceNodes(elm, ns, null);
+	}
+
+	#wrapAndReplaceNodes(e: Node, cs: Node[], ref: Node | null): void {
+		if (cs.length) {
+			const div: HTMLElement = document.createElement('div');
+			for (const c of cs) {
+				div.appendChild(e.removeChild(c));
+			}
+			e.insertBefore(div, ref);
+			cs.length = 0;
 		}
 	}
 
-	getElement(): HTMLDivElement {
-		return this.#elm;
+	#wrapWithSpan(e: HTMLElement): void {
+		const span: HTMLElement = document.createElement('span');
+		for (const c of Array.from(e.childNodes)) {
+			span.appendChild(e.removeChild(c));
+		}
+		span.innerHTML = span.innerHTML.trim();
+		e.appendChild(span);
 	}
 
-	onResize() {
-		if (window.innerWidth < 600) {
-			this.#elm.classList.remove(this.#caption);
-			this.#elm.classList.add(Caption.CLS_SUBTITLE);
+	setState(state: string, flag: boolean): void {
+		if (flag) {
+			this.#e.classList.add(state);
 		} else {
-			this.#elm.classList.remove(Caption.CLS_SUBTITLE);
-			this.#elm.classList.add(this.#caption);
+			this.#e.classList.remove(state);
+		}
+	}
+
+	onResize(): void {
+		if (window.innerWidth < 600) {
+			this.#e.classList.remove(this.#type);
+			this.#e.classList.add(CLS_SUBTITLE);
+		} else {
+			this.#e.classList.remove(CLS_SUBTITLE);
+			this.#e.classList.add(this.#type);
 		}
 	}
 }

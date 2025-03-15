@@ -2,50 +2,39 @@
  * Slide
  *
  * @author Takuto Yanagida
- * @version 2025-03-07
+ * @version 2025-03-15
  */
 
 import { Caption } from './_class-caption';
-import { MountPicture } from './_class-mount-picture';
+import { Mount } from './_class-mount';
+import { MountImage } from './_class-mount-image';
 import { MountVideo } from './_class-mount-video';
+
+const CLS_PRE_DISPLAY = 'pre-display';
+const CLS_DISPLAY     = 'display';
 
 export class Slide {
 
-	static CLS_SCROLL      = 'scroll';
-	static CLS_PRE_DISPLAY = 'pre-display';
-	static CLS_DISPLAY     = 'display';
-
-	#idx: number = 0;
-	#cap: Caption | null;
-	#mnt: MountVideo | MountPicture;
+	#idx : number = 0;
+	#cap : Caption | null;
+	#mnt : Mount;
 	#type: string = '';
 
 	constructor(li: HTMLLIElement, idx: number, useCaption = true) {
 		this.#idx = idx;
 		this.#cap = useCaption ? Caption.create(li) : null;
 
-		if (this.#isVideo(li)) {
+		if (li.querySelector(':scope > video, :scope > a > video')) {
 			this.#mnt  = new MountVideo(li);
 			this.#type = 'video';
 		} else {
-			this.#mnt  = new MountPicture(li);
+			this.#mnt  = new MountImage(li);
 			this.#type = 'image';
 		}
-		if (li.classList.contains(Slide.CLS_SCROLL)) {
-			this.#mnt.getElement().classList.add(Slide.CLS_SCROLL);
-		}
-		li.insertBefore(this.#mnt.getElement(), li.firstChild);
-		const e = li.querySelector('a') ?? li;
-		e.insertBefore(this.#mnt.getElement(), e.firstChild);
 	}
 
 	getType(): string {
 		return this.#type;
-	}
-
-	#isVideo(li: HTMLLIElement): boolean {
-		const v = li.querySelector(':scope > video, :scope > a > video');
-		return null !== v;
 	}
 
 	onResize(): boolean {
@@ -55,9 +44,11 @@ export class Slide {
 	}
 
 	onPreDisplay(cur: number, size: number): void {
-		const m = ((this.#idx % size) === cur) ? 'add' : 'remove';
-		this.#mnt.getElement().classList[m](Slide.CLS_PRE_DISPLAY);
-		if (this.#cap) this.#cap.getElement().classList[m](Slide.CLS_PRE_DISPLAY);
+		const isCur: boolean = (this.#idx % size) === cur;
+		this.#mnt.setState(CLS_PRE_DISPLAY, isCur);
+		if (this.#cap) {
+			this.#cap.setState(CLS_PRE_DISPLAY, isCur);
+		}
 	}
 
 	transition(cur: number, size: number): void {
@@ -65,11 +56,12 @@ export class Slide {
 	}
 
 	display(cur: number, size: number): void {
-		const m = ((this.#idx % size) === cur) ? 'add' : 'remove';
-		this.#mnt.getElement().classList[m](Slide.CLS_DISPLAY);
-		if (this.#cap) this.#cap.getElement().classList[m](Slide.CLS_DISPLAY);
-
-		this.#mnt.display((this.#idx % size) === cur);
+		const isCur: boolean = (this.#idx % size) === cur;
+		this.#mnt.setState(CLS_DISPLAY, isCur);
+		if (this.#cap) {
+			this.#cap.setState(CLS_DISPLAY, isCur);
+		}
+		this.#mnt.display(isCur);
 	}
 
 	getDuration(timeDur: number, timeTran: number, doRandom: boolean): number {

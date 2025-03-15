@@ -2,36 +2,41 @@
  * Backgrounds
  *
  * @author Takuto Yanagida
- * @version 2022-11-04
+ * @version 2025-03-13
  */
 
-const NS      = 'slider-simplex';
-const CLS_BGS = NS + '-backgrounds';
-
+const CLS_BG      = 'background';
 const CLS_VISIBLE = 'visible';
 
-const bgs: HTMLDivElement[] = [];
+export class Background {
 
-export function initBackgrounds(size: number, root: Element, lis: HTMLLIElement[]): void {
-	const frame: HTMLDivElement = document.createElement('div');
-	frame.classList.add(CLS_BGS);
-	root.insertBefore(frame, root.firstChild);
+	#bs: HTMLElement[] = [];
 
-	for (let i = 0; i < size; i += 1) {
-		const li  = lis[i];
-		const bg  = document.createElement('div');
-		const img: HTMLImageElement = li.querySelector(':scope img') as HTMLImageElement;
-		if (img) {
-			bg.style.backgroundImage = `url('${img.src}')`;
+	constructor(root: HTMLElement, lis: HTMLElement[]) {
+		const base: HTMLElement = document.createElement('div');
+		base.classList.add(CLS_BG);
+		root.insertBefore(base, root.firstChild);
+
+		for (const li of lis) {
+			let bg: HTMLElement;
+
+			const img: HTMLElement = li.querySelector('img') as HTMLElement;
+			if (img) {
+				bg = img.cloneNode(false) as HTMLElement;
+			} else {
+				bg = document.createElement('div');
+			}
+			base.appendChild(bg);
+			this.#bs.push(bg);
 		}
-		frame.appendChild(bg);
-		bgs.push(bg);
 	}
-}
 
-export function transitionBackgrounds(idx: number, size: number): void {
-	for (let i = 0; i < size; i += 1) {
-		if (!bgs[i]) continue;
-		bgs[i].classList[i === idx ? 'add' : 'remove'](CLS_VISIBLE);
+	transition(i: number): void {
+		for (const r of this.#bs) {
+			r.classList.remove(CLS_VISIBLE);
+		}
+		if (this.#bs[i]) {
+			this.#bs[i].classList.add(CLS_VISIBLE);
+		}
 	}
 }
