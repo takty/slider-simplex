@@ -6,12 +6,27 @@
 <meta name="description" content="Samples of the Slider Simplex - Hero">
 <meta name="author" content="">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script type="module" crossorigin src="./assets/hero-KS-7OJEC.js"></script>
-  <link rel="modulepreload" crossorigin href="./assets/slider-simplex-D6xXYD2C.js">
-  <link rel="stylesheet" crossorigin href="./assets/slider-simplex-BUFxYTT-.css">
-  <link rel="stylesheet" crossorigin href="./assets/style-DmX2iouz.css">
+  <script type="module" crossorigin src="./assets/hero-DGKW5qa5.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/slider-simplex-Otey8t5S.js">
+  <link rel="stylesheet" crossorigin href="./assets/slider-simplex-DepbDPD-.css">
+  <link rel="stylesheet" crossorigin href="./assets/style-C1aSZuNN.css">
 </head>
 <body>
+<style>
+	/* Style element must be here because of vite! */
+	.slider-simplex {
+		--effect-type: fade;
+
+		--show-background: false;
+		--show-side-slide: false;
+
+		--create-navigation: false;
+		--create-pagination: false;
+	}
+	#ss0  { --effect-type: slide; }
+	#ss1  { --effect-type: scroll; }
+	#ss-v { --effect-type: slide; }
+</style>
 
 <div class="content">
 	<h1>Slider Simplex - Hero</h1>
@@ -24,11 +39,18 @@
 
 	<div class="frame-hero">
 		<section class="slider-simplex" id="ss0">
-			<div class="slider-simplex-frame">
-				<ul class="slider-simplex-slides">
-					<li class="scroll" data-img="https://placehold.jp/f99/666/900x1200.png" data-img-sub="https://placehold.jp/f9f/666/900x1200.png"></li>
-					<li data-img="https://placehold.jp/9d9/666/1200x900.png"></li>
-					<li data-img="https://placehold.jp/99f/666/1200x900.png"></li>
+			<div class="frame">
+				<ul class="slides">
+					<li class="scroll">
+						<img src="https://placehold.jp/f99/666/900x1200.png">
+						<img src="https://placehold.jp/f9f/666/900x1200.png">
+					</li>
+					<li>
+						<img src="https://placehold.jp/9d9/666/1200x900.png">
+					</li>
+					<li>
+						<img src="https://placehold.jp/99f/666/1200x900.png">
+					</li>
 				</ul>
 			</div>
 		</section>
@@ -38,11 +60,17 @@
 
 	<div class="frame-hero">
 		<section class="slider-simplex" id="ss1">
-			<div class="slider-simplex-frame">
-				<ul class="slider-simplex-slides">
-					<li data-img="https://placehold.jp/f99/666/1200x900.png"></li>
-					<li data-img="https://placehold.jp/9d9/666/1200x900.png"></li>
-					<li data-img="https://placehold.jp/99f/666/1200x900.png"></li>
+			<div class="frame">
+				<ul class="slides">
+					<li>
+						<img src="https://placehold.jp/f99/666/1200x900.png">
+					</li>
+					<li>
+						<img src="https://placehold.jp/9d9/666/1200x900.png">
+					</li>
+					<li>
+						<img src="https://placehold.jp/99f/666/1200x900.png">
+					</li>
 				</ul>
 			</div>
 		</section>
@@ -52,11 +80,17 @@
 
 	<div class="frame-hero">
 		<section class="slider-simplex" id="ss2">
-			<div class="slider-simplex-frame">
-				<ul class="slider-simplex-slides">
-					<li data-img="https://placehold.jp/f99/666/1200x900.png"></li>
-					<li data-img="https://placehold.jp/9d9/666/1200x900.png"></li>
-					<li data-img="https://placehold.jp/99f/666/1200x900.png"></li>
+			<div class="frame">
+				<ul class="slides">
+					<li>
+						<img src="https://placehold.jp/f99/666/1200x900.png">
+					</li>
+					<li>
+						<img src="https://placehold.jp/9d9/666/1200x900.png">
+					</li>
+					<li>
+						<img src="https://placehold.jp/99f/666/1200x900.png">
+					</li>
 				</ul>
 			</div>
 		</section>
@@ -70,11 +104,17 @@
 
 	<div class="frame-hero">
 		<section class="slider-simplex" id="ss-v">
-			<div class="slider-simplex-frame">
-				<ul class="slider-simplex-slides">
-					<li data-video="res/sample1.mp4"></li>
-					<li data-video="res/sample2.mp4"></li>
-					<li data-img="https://placehold.jp/99f/666/1200x900.png"></li>
+			<div class="frame">
+				<ul class="slides">
+					<li>
+						<video><source src="./assets/sample1-D-G8mYzz.mp4"></video>
+					</li>
+					<li>
+						<video><source src="./assets/sample2-f8LBy0IQ.mp4"></video>
+					</li>
+					<li>
+						<img src="https://placehold.jp/99f/666/1200x900.png">
+					</li>
 				</ul>
 			</div>
 		</section>
