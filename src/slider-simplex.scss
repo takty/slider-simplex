@@ -1,21 +1,31 @@
 /**
- * Slider Simplex - Show
+ * Slider Simplex
  *
  * @author Takuto Yanagida
- * @version 2022-11-04
+ * @version 2025-03-17
  */
 
-
-@use "sass:math";
-
-
 .slider-simplex {
+	--effect-type     : slide;
+	--duration-time   : 8s;
+	--transition-time : 1s;
+	--randomize-timing: false;
+
+	--show-background: false;
+	--show-side-slide: false;
+
+	--create-navigation: true;
+	--create-pagination: true;
+	--create-selector  : false;
+
+	// -------------------------------------------------------------------------
+
 	--size-width     : 48rem;
 	--size-height-min: 14rem;
 	--size-height-max: 80vh;
 	--color-frame    : #fff6;
 
-    --slide-ratio     : #{math.percentage(math.div(5, 12))};
+    --slide-ratio     : 12/5;
 	--slide-size      : cover;
 	--slide-zoom      : 1.05;
 	--slide-color-dual: #fff6;
@@ -64,29 +74,42 @@
 	}
 
 	overflow: hidden;
-	&:not(.start) { opacity: 0; }
-	transition: opacity 0.2s;
+	opacity: 0;
+	&.start {
+		opacity   : 1;
+		transition: opacity 0.4s;
+	}
+
+	display              : grid;
+	grid-template-columns: calc((100% - var(--size-width)) / 2) auto calc((100% - var(--size-width)) / 2);
+	grid-template-rows   : auto auto;
+
+	gap: 0.5rem 0;
 }
 
 
 // -----------------------------------------------------------------------------
 
 
-.slider-simplex .frame {
-	margin-inline: auto;
-	max-width    : var(--size-width);
-	width        : 100%;
+.slider-simplex {
 
-	background-color: var(--color-frame);
+	.frame {
+		grid-area: 1/2/2/3;
 
-	min-height: var(--size-height-min);
-	max-height: var(--size-height-max);
+		background-color: var(--color-frame);
 
-	position: relative;
-	&::before {
-		content    : '';
-		display    : block;
-		padding-top: var(--slide-ratio);
+		width: min(100%, var(--size-width));
+
+		min-height: var(--size-height-min);
+		max-height: var(--size-height-max);
+
+		position: relative;
+		&::before {
+			content     : '';
+			display     : block;
+			width       : 100%;
+			aspect-ratio: var(--slide-ratio);
+		}
 	}
 }
 
@@ -111,7 +134,19 @@
 		backface-visibility: hidden;
 		opacity            : 0;
 
-		> a { display: contents; }
+		> * {
+			grid-area: 1/1/2/2;
+		}
+
+		> a {
+			display: grid;
+
+			text-decoration: none;
+
+			> * {
+				grid-area: 1/1/2/2;
+			}
+		}
 	}
 }
 
@@ -194,10 +229,11 @@
 
 	video {
 		position  : absolute;
-		width     : auto;
-		height    : auto;
+		width     : 100%;
+		height    : 100%;
 		max-width : initial;
 		max-height: initial;
+		object-fit: cover;
 	}
 	.width {
 		width    : 100%;
@@ -218,7 +254,7 @@
 .slider-simplex {
 
 	.caption {
-		position: relative;
+		position      : relative;
 		pointer-events: none;
 
 		color      : var(--caption-color);
@@ -227,7 +263,7 @@
 
 		font-feature-settings: 'pkna' 1;
 
-		transition-duration: var(--transition-time, 1);
+		transition-duration: var(--transition-time, 1s);
 		transition-property: opacity;
 
 		opacity: 0;
@@ -301,19 +337,18 @@
 
 
 	.background {
-		position: absolute;
-		inset   : 0;
+		grid-area: 1/1/2/4;
 
 		pointer-events: none;
+		overflow      : hidden;
 
-		overflow: hidden;
-		display : grid;
-
+		position: relative;
 		img {
+			position: absolute;
+			inset   : 0;
+
 			max-width : unset;
 			max-height: unset;
-
-			grid-area: 1/1/-1/-1;
 
 			width     : 100%;
 			height    : 100%;
@@ -324,7 +359,7 @@
 			transform       : scale(2, 2);
 			transform-origin: center center;
 
-			transition-duration: calc(var(--transition-time, 1) * 2);
+			transition-duration: calc(var(--transition-time, 1s) * 2);
 			transition-property: opacity;
 
 			opacity: 0;
@@ -339,61 +374,75 @@
 
 
 	.navigation {  // Previous/Next Button
-		appearance: none;
-		background: none;
-		border    : none;
+		grid-area: 1/2/2/3;
+		position : relative;
 
-		cursor: pointer;
+		pointer-events: none;
 
-		position   : absolute;
-		inset-block: 0;
-		width      : var(--btn-size);
+		display              : grid;
+		grid-template-columns: auto 1fr auto;
 
-		transition: opacity 0.2s;
+		> button {
+			appearance: none;
+			background: none;
+			border    : none;
 
-		&::before,
-		&::after {
-			content : '';
-			position: absolute;
-			top     : 50%;
-			left    : 50%;
+			cursor: pointer;
+			pointer-events: auto;
 
-			transform : translate(-50%, -50%);
-			transition: all 0.2s;
-		}
+			width: var(--btn-size);
 
-		&::before {
-			width : var(--btn-size);
-			height: var(--btn-size);
+			transition: opacity 0.2s;
 
-			background-color: var(--btn-color);
-		}
+			display      : grid;
+			align-items  : center;
+			justify-items: center;
 
-		&::after {
-			width : var(--btn-size-mark);
-			height: var(--btn-size-mark);
+			&::before,
+			&::after {
+				content : '';
+				position: relative;
 
-			clip-path       : var(--btn-mark-path);
-			background-color: var(--btn-mark-color);
-		}
+				grid-area: 1/1/2/2;
 
-		&.active {
-			&::before { background-color: var(--btn-color-hover); }
-			&::after  { background-color: var(--btn-mark-color-hover); }
-		}
+				transition: all 0.2s;
+			}
 
-		&:nth-of-type(1) {
-			inset-inline-start: 0;
-			transform         : rotate(180deg);
-		}
+			&::before {
+				width : var(--btn-size);
+				height: var(--btn-size);
 
-		&:nth-of-type(2) {
-			inset-inline-end: 0;
-		}
+				background-color: var(--btn-color);
+			}
 
-		&.disabled {
-			opacity: 0;
-			cursor : default;
+			&::after {
+				width : var(--btn-size-mark);
+				height: var(--btn-size-mark);
+
+				clip-path       : var(--btn-mark-path);
+				background-color: var(--btn-mark-color);
+			}
+
+			&.active {
+				&::before { background-color: var(--btn-color-hover); }
+				&::after  { background-color: var(--btn-mark-color-hover); }
+			}
+
+			&:nth-of-type(1) {
+				grid-column: 1/2;
+				// inset-inline-start: 0;
+				transform         : rotate(180deg);
+			}
+
+			&:nth-of-type(2) {
+				grid-column: 3/4;
+				// inset-inline-end: 0;
+			}
+
+			&.disabled {
+				opacity: 0;
+				cursor : default;
+			}
 		}
 	}
 
@@ -402,18 +451,18 @@
 
 
 	.pagination {
-		position: absolute;
-		inset   : var(--rivet-inset);
-		z-index : 2;
-		width   : min(100%, var(--size-width));
+		grid-area: 1/2/2/3;
+		position : relative;
 
-		left     : 50%;
-		transform: translateX(-50%);
-
-		display        : flex;
-		justify-content: flex-end;
+		width: min(100%, var(--size-width));
 
 		pointer-events: none;
+
+		ol {
+			display        : flex;
+			align-items    : flex-start;
+			justify-content: flex-end;
+		}
 
 		li {
 			display    : inline-grid;
@@ -445,11 +494,14 @@
 
 
 	.selector {
-		display        : flex;
-		justify-content: center;
-		gap            : 0.5rem;
+		grid-area: 2/2/3/3;
 
-		padding: 0.5rem;
+		ol {
+			display        : flex;
+			justify-content: center;
+			gap            : 0.5rem;
+			flex-wrap      : wrap;
+		}
 
 		li {
 			display    : inline-grid;

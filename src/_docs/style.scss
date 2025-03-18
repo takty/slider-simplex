@@ -85,6 +85,7 @@ pre {
 	gap            : 1rem;
 
 	list-style-type: none;
+	padding        : 0;
 
 	button {
 		width : 5rem;
@@ -94,9 +95,9 @@ pre {
 
 .slider-simplex.ecs {
 	--size-width : 24rem;
-	--slide-ratio: 100%;
+	--slide-ratio: 1;
 
-	.slider-simplex-picture {
+	.image {
 		img {
 			border    : 2rem solid transparent;
 			transition: border-width 1s;
@@ -105,7 +106,7 @@ pre {
 			border-width: 0;
 		}
 	}
-	.slider-simplex-caption:not(.pre-display) {
+	.caption:not(.pre-display) {
 		opacity: 0;
 	}
 }

@@ -2,18 +2,33 @@
  * Common Functions
  *
  * @author Takuto Yanagida
- * @version 2022-08-01
+ * @version 2025-03-18
  */
 
-
-const resizeListeners: (() => void)[] = [];
-
-export function onResize(fn: () => void, doFirst = false): void {
-	if (doFirst) fn();
-	resizeListeners.push(throttle(fn));
+export function repeatUntil(timeout: number, fn: () => boolean): void {
+	const f = () => {
+		const finish: boolean = fn();
+		if (!finish) {
+			setTimeout(f, timeout);
+		}
+	}
+	setTimeout(f, timeout);
 }
 
-export function onLoad(fn: () => void): void {
+export function detectTouch(elm: HTMLElement): void {
+	if (0 < navigator.maxTouchPoints) {
+		elm.addEventListener('pointerenter', (e: PointerEvent): void => {
+			const isTouch: boolean = (e.pointerType !== 'mouse');
+			elm.classList[isTouch ? 'add' : 'remove']('touch');
+		}, { once: true });
+	}
+}
+
+
+// -----------------------------------------------------------------------------
+
+
+export function callAfterDocumentReady(fn: () => void): void {
 	if ('loading' === document.readyState) {
 		document.addEventListener('DOMContentLoaded', fn);
 	} else {
@@ -25,24 +40,12 @@ export function onLoad(fn: () => void): void {
 // -----------------------------------------------------------------------------
 
 
-export function initResizeEventHandler(): void {
-	window.addEventListener('resize', () => { for (const l of resizeListeners) l(); }, { passive: true });
-}
+export interface AsyncTimeoutHandle {
+	set  : () => Promise<void>;
+	clear: () => void;
+};
 
-export function throttle(fn: () => void): () => void {
-	let isRunning: boolean = false;
-	function run() {
-		isRunning = false;
-		fn();
-	}
-	return () => {
-		if (isRunning) return;
-		isRunning = true;
-		requestAnimationFrame(run);
-	};
-}
-
-export function asyncTimeout(ms: number, fn: () => void = () => {}): { set: () => Promise<void>, clear: () => void } {
+export function asyncTimeout(ms: number, fn: () => Promise<void>): AsyncTimeoutHandle {
 	let tid: number | null = null;
 	let res: () => void;
 	return {
@@ -54,7 +57,7 @@ export function asyncTimeout(ms: number, fn: () => void = () => {}): { set: () =
 				r();
 			}, ms);
 		}),
-		clear: () => {
+		clear: (): void => {
 			if (tid) {
 				clearTimeout(tid);
 				tid = null;
@@ -64,11 +67,15 @@ export function asyncTimeout(ms: number, fn: () => void = () => {}): { set: () =
 	};
 }
 
+export async function wait(ms: number): Promise<void> {
+	return new Promise((r) => setTimeout(r, ms));
+}
+
 
 // -----------------------------------------------------------------------------
 
 
-export function initViewportDetection(root: HTMLElement, cls: string, offset: number): void {
+export function initializeViewportDetection(root: HTMLElement, cls: string, offset: number): void {
 	const io = new IntersectionObserver((es) => {
 		for (const e of es) root.classList[e.isIntersecting ? 'add' : 'remove'](cls);
 	}, { rootMargin: `${offset}px 0px` });

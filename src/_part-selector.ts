@@ -2,7 +2,7 @@
  * Thumbnails
  *
  * @author Takuto Yanagida
- * @version 2025-03-14
+ * @version 2025-03-15
  */
 
 const CLS_SELECTOR = 'selector';
@@ -14,9 +14,9 @@ export class Selector {
 
 	#ts: HTMLElement[] = [];
 
-	constructor(root: HTMLElement, lis: HTMLElement[], size: number, fn: Fn, forceCreate: boolean = true) {
+	constructor(root: HTMLElement, lis: HTMLElement[], size: number, fn: Fn, forced: boolean = true) {
 		let base: HTMLElement = root.querySelector('.' + CLS_SELECTOR) as HTMLElement;
-		if (!base && forceCreate) {
+		if (!base && forced) {
 			base = document.createElement('div');
 			base.classList.add(CLS_SELECTOR);
 			root.appendChild(base);
@@ -24,8 +24,8 @@ export class Selector {
 		if (!base) {
 			return;
 		}
+		const e: HTMLElement = this.createElement(base);
 		const dir = size === 2 ? 1 : 0;
-
 		for (let i: number = 0; i < size; i += 1) {
 			const li: HTMLElement = lis[i];
 			let th: HTMLElement;
@@ -38,10 +38,19 @@ export class Selector {
 			}
 			const l: HTMLElement = document.createElement('li');
 			l.appendChild(th);
-			base.appendChild(l);
+			e.appendChild(l);
 			l.addEventListener('click', (): Promise<void> => fn(i, dir));
 			this.#ts.push(l);
 		}
+	}
+
+	private createElement(base: HTMLElement): HTMLElement {
+		let e: HTMLElement | null = base.querySelector(':scope > ol') as HTMLElement | null;
+		if (!e) {
+			e = document.createElement('ol');
+			base.appendChild(e);
+		}
+		return e;
 	}
 
 	transition(i: number): void {

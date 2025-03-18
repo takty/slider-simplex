@@ -2,7 +2,7 @@
  * Pagination
  *
  * @author Takuto Yanagida
- * @version 2025-03-13
+ * @version 2025-03-15
  */
 
 const CLS_PAGINATION = 'pagination';
@@ -12,30 +12,31 @@ type Fn = (idx: number, dir: number) => Promise<void>;
 
 export class Pagination {
 
-	static create(root: HTMLElement, size: number, fn: Fn): Pagination | null {
-		if (1 === size) {
-			return null;
-		}
-		return new Pagination(root, size, fn);
-	}
-
 	#rs: HTMLElement[] = [];
 
-	constructor(root: HTMLElement, size: number, fn: Fn) {
-		let e: HTMLElement = this.createElement(root);
+	constructor(root: HTMLElement, size: number, fn: Fn, forced: boolean = true) {
+		let base: HTMLElement = root.querySelector('.' + CLS_PAGINATION) as HTMLElement;
+		if (!base && forced) {
+			base = document.createElement('div');
+			base.classList.add(CLS_PAGINATION);
+			root.appendChild(base);
+		}
+		if (!base) {
+			return;
+		}
+		const e: HTMLElement = this.createElement(base);
 		const dir = size === 2 ? 1 : 0;
 		for (let i: number = 0; i < size; i += 1) {
 			e.appendChild(this.createBullet(fn, i, dir));
 		}
 	}
 
-	private createElement(root: HTMLElement): HTMLElement {
-		let e: HTMLElement | null = root.querySelector(':scope > ol') as HTMLElement | null;
+	private createElement(base: HTMLElement): HTMLElement {
+		let e: HTMLElement | null = base.querySelector(':scope > ol') as HTMLElement | null;
 		if (!e) {
 			e = document.createElement('ol');
-			root.appendChild(e);
+			base.appendChild(e);
 		}
-		e.classList.add(CLS_PAGINATION);
 		return e;
 	}
 

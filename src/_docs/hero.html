@@ -9,14 +9,29 @@
 <link rel="stylesheet" href="style.scss">
 <script type="module">
 	import '../slider-simplex.scss';
-	import { slider_show } from '../slider-simplex.ts';
-	slider_show('ss0', { is_show: false, effect_type: 'slide' });
-	slider_show('ss1', { is_show: false, effect_type: 'scroll' });
-	slider_show('ss2', { is_show: false, effect_type: 'fade' });
-	slider_show('ss-v', { is_show: false, effect_type: 'slide' });
+	import { SliderSimplex } from '../slider-simplex.ts';
+	SliderSimplex.create('ss0');
+	SliderSimplex.create('ss1');
+	SliderSimplex.create('ss2');
+	SliderSimplex.create('ss-v');
 </script>
 </head>
 <body>
+<style>
+	/* Style element must be here because of vite! */
+	.slider-simplex {
+		--effect-type: fade;
+
+		--show-background: false;
+		--show-side-slide: false;
+
+		--create-navigation: false;
+		--create-pagination: false;
+	}
+	#ss0  { --effect-type: slide; }
+	#ss1  { --effect-type: scroll; }
+	#ss-v { --effect-type: slide; }
+</style>
 
 <div class="content">
 	<h1>Slider Simplex - Hero</h1>
@@ -29,8 +44,8 @@
 
 	<div class="frame-hero">
 		<section class="slider-simplex" id="ss0">
-			<div class="slider-simplex-frame">
-				<ul class="slider-simplex-slides">
+			<div class="frame">
+				<ul class="slides">
 					<li class="scroll">
 						<img src="https://placehold.jp/f99/666/900x1200.png">
 						<img src="https://placehold.jp/f9f/666/900x1200.png">
@@ -50,8 +65,8 @@
 
 	<div class="frame-hero">
 		<section class="slider-simplex" id="ss1">
-			<div class="slider-simplex-frame">
-				<ul class="slider-simplex-slides">
+			<div class="frame">
+				<ul class="slides">
 					<li>
 						<img src="https://placehold.jp/f99/666/1200x900.png">
 					</li>
@@ -70,8 +85,8 @@
 
 	<div class="frame-hero">
 		<section class="slider-simplex" id="ss2">
-			<div class="slider-simplex-frame">
-				<ul class="slider-simplex-slides">
+			<div class="frame">
+				<ul class="slides">
 					<li>
 						<img src="https://placehold.jp/f99/666/1200x900.png">
 					</li>
@@ -94,8 +109,8 @@
 
 	<div class="frame-hero">
 		<section class="slider-simplex" id="ss-v">
-			<div class="slider-simplex-frame">
-				<ul class="slider-simplex-slides">
+			<div class="frame">
+				<ul class="slides">
 					<li>
 						<video><source src="res/sample1.mp4"></video>
 					</li>

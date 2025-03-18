@@ -2,7 +2,7 @@
  * Slide
  *
  * @author Takuto Yanagida
- * @version 2025-03-15
+ * @version 2025-03-17
  */
 
 import { Caption } from './_class-caption';
@@ -15,13 +15,11 @@ const CLS_DISPLAY     = 'display';
 
 export class Slide {
 
-	#idx : number = 0;
 	#cap : Caption | null;
 	#mnt : Mount;
 	#type: string = '';
 
-	constructor(li: HTMLLIElement, idx: number, useCaption = true) {
-		this.#idx = idx;
+	constructor(li: HTMLLIElement, useCaption = true) {
 		this.#cap = useCaption ? Caption.create(li) : null;
 
 		if (li.querySelector(':scope > video, :scope > a > video')) {
@@ -38,25 +36,23 @@ export class Slide {
 	}
 
 	onResize(): boolean {
-		if ('video' === this.#type && !this.#mnt.onResize()) return false;
+		if (!this.#mnt.onResize()) return false;
 		if (this.#cap) this.#cap.onResize();
 		return true;
 	}
 
-	onPreDisplay(cur: number, size: number): void {
-		const isCur: boolean = (this.#idx % size) === cur;
+	onPreDisplay(isCur: boolean): void {
 		this.#mnt.setState(CLS_PRE_DISPLAY, isCur);
 		if (this.#cap) {
 			this.#cap.setState(CLS_PRE_DISPLAY, isCur);
 		}
 	}
 
-	transition(cur: number, size: number): void {
-		this.#mnt.transition((this.#idx % size) === cur, size);
+	transition(isCur: boolean, size: number): void {
+		this.#mnt.transition(isCur, size);
 	}
 
-	display(cur: number, size: number): void {
-		const isCur: boolean = (this.#idx % size) === cur;
+	display(isCur: boolean): void {
 		this.#mnt.setState(CLS_DISPLAY, isCur);
 		if (this.#cap) {
 			this.#cap.setState(CLS_DISPLAY, isCur);
