@@ -2,7 +2,7 @@
  * Thumbnails
  *
  * @author Takuto Yanagida
- * @version 2025-03-15
+ * @version 2025-03-18
  */
 
 const CLS_SELECTOR = 'selector';
@@ -27,20 +27,7 @@ export class Selector {
 		const e: HTMLElement = this.createElement(base);
 		const dir = size === 2 ? 1 : 0;
 		for (let i: number = 0; i < size; i += 1) {
-			const li: HTMLElement = lis[i];
-			let th: HTMLElement;
-
-			const img: HTMLElement = li.querySelector('img') as HTMLElement;
-			if (img) {
-				th = img.cloneNode(false) as HTMLElement;
-			} else {
-				th = document.createElement('div');
-			}
-			const l: HTMLElement = document.createElement('li');
-			l.appendChild(th);
-			e.appendChild(l);
-			l.addEventListener('click', (): Promise<void> => fn(i, dir));
-			this.#ts.push(l);
+			e.appendChild(this.createThumbnail(lis[i], fn, i, dir));
 		}
 	}
 
@@ -51,6 +38,23 @@ export class Selector {
 			base.appendChild(e);
 		}
 		return e;
+	}
+
+	private createThumbnail(li: HTMLElement, fn: Fn, i: number, dir: number): HTMLElement {
+		const r: HTMLElement = document.createElement('li');
+
+		let th: HTMLElement;
+		const img: HTMLElement = li.querySelector('img') as HTMLElement;
+		if (img) {
+			th = img.cloneNode(false) as HTMLElement;
+		} else {
+			th = document.createElement('div');
+		}
+		r.appendChild(th);
+
+		r.addEventListener('click', (): Promise<void> => fn(i, dir));
+		this.#ts.push(r);
+		return r;
 	}
 
 	transition(i: number): void {

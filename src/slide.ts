@@ -2,37 +2,31 @@
  * Slide
  *
  * @author Takuto Yanagida
- * @version 2025-03-17
+ * @version 2025-03-18
  */
 
-import { Caption } from './_class-caption';
-import { Mount } from './_class-mount';
-import { MountImage } from './_class-mount-image';
-import { MountVideo } from './_class-mount-video';
+import { Caption } from './caption';
+import { Mount, MountImage, MountVideo } from './mount';
 
 const CLS_PRE_DISPLAY = 'pre-display';
 const CLS_DISPLAY     = 'display';
 
 export class Slide {
 
-	#cap : Caption | null;
-	#mnt : Mount;
-	#type: string = '';
+	#mnt: Mount;
+	#cap: Caption | null;
 
-	constructor(li: HTMLLIElement, useCaption = true) {
+	constructor(li: HTMLLIElement, useCaption: boolean = true) {
 		this.#cap = useCaption ? Caption.create(li) : null;
-
 		if (li.querySelector(':scope > video, :scope > a > video')) {
 			this.#mnt  = new MountVideo(li);
-			this.#type = 'video';
 		} else {
 			this.#mnt  = new MountImage(li);
-			this.#type = 'image';
 		}
 	}
 
 	getType(): string {
-		return this.#type;
+		return this.#mnt.getType();
 	}
 
 	onResize(): boolean {

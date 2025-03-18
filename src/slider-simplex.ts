@@ -6,19 +6,16 @@
  */
 
 import { getStylePropertyBool, getStylePropertyFloat, getStylePropertyString } from './custom-property';
+import { repeatUntil, detectTouch, asyncTimeout, AsyncTimeoutHandle, initializeViewportDetection, callAfterDocumentReady } from './common';
 
-import { repeatUntil, detectTouch, asyncTimeout, AsyncTimeoutHandle, initializeViewportDetection, callAfterDocumentReady } from './_common';
-import { Slide } from './_class-slide';
-import { Navigation } from './_part-navigation';
-import { Pagination } from './_part-pagination';
-import { Indicator } from './_part-indicator';
-import { Selector } from './_part-selector.js';
-import { Background } from './_part-background.js';
+import { Background } from './part-background.js';
+import { Navigation } from './part-navigation';
+import { Pagination } from './part-pagination';
+import { Indicator } from './part-indicator';
+import { Selector } from './part-selector.js';
 
-import { Transition } from './_transition';
-import { TransitionFade } from './_transition-fade';
-import { TransitionSlide } from './_transition-slide';
-import { TransitionScroll } from './_transition-scroll';
+import { Slide } from './slide';
+import { Transition, TransitionFade, TransitionSlide, TransitionScroll } from './transition';
 
 const NS          = 'slider-simplex';
 const CLS_SLIDES  = 'slides';
@@ -211,8 +208,11 @@ export class SliderSimplex {
 
 		const t: number = window.performance.now();
 		if (dir !== 0 && t - this.lastTime < this.#timeTran * 1000) {
-			if (this.stReserve) clearTimeout(this.stReserve);
-			this.stReserve = setTimeout((): Promise<void> => this.transition(idx, dir), this.#timeTran * 1000 - (t - this.lastTime));
+			if (this.stReserve) {
+				clearTimeout(this.stReserve);
+			}
+			const to: number = this.#timeTran * 1000 - (t - this.lastTime);
+			this.stReserve = setTimeout((): Promise<void> => this.transition(idx, dir), to);
 			return;
 		}
 		this.lastTime = t;

@@ -2,7 +2,7 @@
  * Pagination
  *
  * @author Takuto Yanagida
- * @version 2025-03-15
+ * @version 2025-03-18
  */
 
 const CLS_PAGINATION = 'pagination';
@@ -55,4 +55,5 @@ export class Pagination {
 			this.#rs[i].classList.add(CLS_VISIBLE);
 		}
 	}
+
 }

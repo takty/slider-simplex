@@ -6,7 +6,7 @@
  */
 
 export function repeatUntil(timeout: number, fn: () => boolean): void {
-	const f = () => {
+	const f: () => void = (): void => {
 		const finish: boolean = fn();
 		if (!finish) {
 			setTimeout(f, timeout);
@@ -49,9 +49,9 @@ export function asyncTimeout(ms: number, fn: () => Promise<void>): AsyncTimeoutH
 	let tid: number | null = null;
 	let res: () => void;
 	return {
-		set: () => new Promise((r) => {
+		set: (): Promise<void> => new Promise((r) => {
 			res = r
-			tid = setTimeout(async () => {
+			tid = setTimeout(async (): Promise<void> => {
 				tid = null;
 				await fn();
 				r();
@@ -76,16 +76,18 @@ export async function wait(ms: number): Promise<void> {
 
 
 export function initializeViewportDetection(root: HTMLElement, cls: string, offset: number): void {
-	const io = new IntersectionObserver((es) => {
-		for (const e of es) root.classList[e.isIntersecting ? 'add' : 'remove'](cls);
+	const io = new IntersectionObserver((es: IntersectionObserverEntry[]): void => {
+		for (const e of es) {
+			root.classList[e.isIntersecting ? 'add' : 'remove'](cls);
+		}
 	}, { rootMargin: `${offset}px 0px` });
 	io.observe(root);
 
 	document.addEventListener('visibilitychange', (): void => {
 		const v: boolean = ('hidden' !== document.visibilityState);
 		if (v) {
-			const r = root.getBoundingClientRect();
-			const h: number = window.innerHeight;
+			const r: DOMRect = root.getBoundingClientRect();
+			const h: number  = window.innerHeight;
 			if ((0 < r.top && r.top < h) || (0 < r.bottom && r.bottom < h)) {
 				root.classList.add(cls);
 			}

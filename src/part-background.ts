@@ -39,4 +39,5 @@ export class Background {
 			this.#bs[i].classList.add(CLS_VISIBLE);
 		}
 	}
+
 }

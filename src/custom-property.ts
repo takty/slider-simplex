@@ -2,14 +2,11 @@
  * Custom Property Utilities
  *
  * @author Takuto Yanagida
- * @version 2025-03-17
+ * @version 2025-03-18
  */
 
 export function getStylePropertyBool(elm: HTMLElement, prop: string, def: boolean = false): boolean {
-	let v: string = getComputedStyle(elm).getPropertyValue(prop).trim();
-	if (('"' === v.at(0) && '"' === v.at(-1)) || ("'" === v.at(0) && "'" === v.at(-1))) {
-		v = v.slice(1, -1);
-	}
+	const v: string = getPropValue(elm, prop);
 	if (!v.length) return def;
 	if (typeof v !== 'string') return Boolean(v);
 	try {
@@ -20,20 +17,21 @@ export function getStylePropertyBool(elm: HTMLElement, prop: string, def: boolea
 }
 
 export function getStylePropertyFloat(elm: HTMLElement, prop: string, def: number = 0): number {
-	let v: string = getComputedStyle(elm).getPropertyValue(prop).trim();
-	if (('"' === v.at(0) && '"' === v.at(-1)) || ("'" === v.at(0) && "'" === v.at(-1))) {
-		v = v.slice(1, -1);
-	}
+	const v: string = getPropValue(elm, prop);
 	if (!v.length) return def;
 	return parseFloat(v);
 }
 
 export function getStylePropertyString(elm: HTMLElement, prop: string, def: string = ''): string {
+	const v: string = getPropValue(elm, prop);
+	if (!v.length) return def;
+	return (typeof v === 'string') ? v : String(v);
+}
+
+function getPropValue(elm: HTMLElement, prop: string): string {
 	let v: string = getComputedStyle(elm).getPropertyValue(prop).trim();
-	console.log(getComputedStyle(elm).getPropertyValue(prop));
 	if (('"' === v.at(0) && '"' === v.at(-1)) || ("'" === v.at(0) && "'" === v.at(-1))) {
 		v = v.slice(1, -1);
 	}
-	if (!v.length) return def;
-	return (typeof v === 'string') ? v : String(v);
+	return v;
 }
