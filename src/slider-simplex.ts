@@ -26,9 +26,6 @@ const CLS_PAUSE   = 'pause';
 const CLS_SCROLL  = 'scroll';
 const OFFSET_VIEW = 100;
 
-// const CLS_PRE_DISPLAY = 'pre-display';
-// const CLS_DISPLAY     = 'display';
-
 const CP_EFFECT_TYPE      = '--effect-type';
 const CP_DURATION_TIME    = '--duration-time';
 const CP_TRANSITION_TIME  = '--transition-time';
@@ -214,9 +211,6 @@ export class SliderSimplex {
 	private transition(idx: number, dir: -1 | 0 | 1): void {
 		if (idx === -1) {
 			idx = wrapAround(this.#curIdx + dir, this.#size);
-		}
-		for (let i: number = 0; i < this.#slides.length; i += 1) {
-			this.#slides[i].onPreDisplay((i % this.#size) === idx);  // Add/remove class 'pre-display'.
 		}
 		for (let i: number = 0; i < this.#slides.length; i += 1) {
 			this.#slides[i].transition((i % this.#size) === idx, this.#size);

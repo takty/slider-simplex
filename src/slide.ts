@@ -2,14 +2,11 @@
  * Slide
  *
  * @author Takuto Yanagida
- * @version 2025-03-23
+ * @version 2025-03-25
  */
 
 import { Caption } from './caption';
 import { Mount, MountImage, MountVideo } from './mount';
-
-const CLS_PRE_DISPLAY = 'pre-display';
-const CLS_DISPLAY     = 'display';
 
 export class Slide {
 
@@ -60,16 +57,11 @@ export class Slide {
 		return true;
 	}
 
-	onPreDisplay(isCur: boolean): void {
-		this.setState(CLS_PRE_DISPLAY, isCur);
-	}
-
 	transition(isCur: boolean, size: number): void {
 		this.#mnt.transition(isCur, size);
 	}
 
 	display(isCur: boolean): void {
-		this.setState(CLS_DISPLAY, isCur);
 		this.#mnt.display(isCur);
 	}
 

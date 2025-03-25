@@ -2,11 +2,14 @@
  * Transition
  *
  * @author Takuto Yanagida
- * @version 2025-03-24
+ * @version 2025-03-25
  */
 
 import { repeatAnimationFrame, wrapAround } from './common';
 import { Slide } from './slide';
+
+const CLS_PRE_DISPLAY = 'pre-display';
+const CLS_DISPLAY     = 'display';
 
 export abstract class Transition {
 
@@ -88,6 +91,8 @@ export class TransitionFade extends Transition {
 			} else {
 				it.v = Math.max(0, it.v - r);
 			}
+			it.s.setState(CLS_PRE_DISPLAY, 0 < it.v && it.v < 1);
+			it.s.setState(CLS_DISPLAY, it.v === 1);
 		}
 		this.update();
 	}
@@ -161,6 +166,18 @@ export class TransitionSlide extends Transition {
 				it.v = Math.min(1, it.v + r);
 			}
 		}
+		let isTransitioning: boolean = false;
+		for (let i: number = this.#its.length - 1; 0 <= i; i -= 1) {
+			const it: Item = this.#its[i];
+			if (0 < it.v && it.v < 1) {
+				isTransitioning = true;
+			}
+			it.s.setState(CLS_PRE_DISPLAY, 0 < it.v && it.v < 1);
+
+			if (it.s.getIndex() === this.#current) {
+				it.s.setState(CLS_DISPLAY, !isTransitioning && it.v === 0);
+			}
+		}
 		this.update();
 	}
 
@@ -185,27 +202,6 @@ export class TransitionScroll extends Transition {
 
 		this.update();
 		repeatAnimationFrame((_t: number, dt: number): void => this.step(dt, tranTime));
-
-		// const map = new WeakMap<HTMLElement, Slide>();
-		// for (const s of ss) {
-		// 	map.set(s.getBase(), s);
-		// }
-
-		// const CLS_PRE_DISPLAY = 'pre-display';
-		// const CLS_DISPLAY     = 'display';
-
-		// const io = new IntersectionObserver((es: IntersectionObserverEntry[]): void => {
-		// 	for (const e of es) {
-		// 		const s = map.get(e.target as HTMLElement) as Slide;
-		// 		s.setState(CLS_PRE_DISPLAY, e.isIntersecting);
-		// 		s.setState(CLS_DISPLAY, 0.9 < e.intersectionRatio);
-		// 		console.log(e.intersectionRatio);
-		// 	}
-		// }
-		// , { root: this.#its[0].s.getBase().parentElement, rootMargin: '-1px', threshold: 0 });
-		// for (const it of this.#its) {
-		// 	io.observe(it.s.getBase());
-		// }
 	}
 
 	private createItems(ss: Slide[]): Item[] {
@@ -314,7 +310,22 @@ export class TransitionScroll extends Transition {
 				it.v = Math.round(it.v);
 			}
 		}
+
+		const ul = this.#its[0].s.getBase().parentElement as HTMLElement;
+		for (const it of this.#its) {
+			const e: number = getOverlapRatio(it.s.getBase(), ul);
+			it.s.setState(CLS_PRE_DISPLAY, 0 < e);
+			it.s.setState(CLS_DISPLAY, 0.99 < e);
+		}
 		this.update();
 	}
 
+}
+
+function getOverlapRatio(target: HTMLElement, base: HTMLElement): number {
+	const rt: DOMRect = target.getBoundingClientRect();
+	const rb: DOMRect = base.getBoundingClientRect();
+	const x0: number  = Math.max(rt.left, rb.left);
+	const x1: number  = Math.min(rt.right, rb.right);
+	return Math.max(0, x1 - x0) / rt.width;
 }
