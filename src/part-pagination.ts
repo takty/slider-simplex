@@ -2,13 +2,13 @@
  * Pagination
  *
  * @author Takuto Yanagida
- * @version 2025-03-18
+ * @version 2025-03-22
  */
 
 const CLS_PAGINATION = 'pagination';
 const CLS_VISIBLE    = 'visible';
 
-type Fn = (idx: number, dir: number) => Promise<void>;
+type Fn = (idx: number, dir: -1 | 0 | 1) => void;
 
 export class Pagination {
 
@@ -40,9 +40,9 @@ export class Pagination {
 		return e;
 	}
 
-	private createBullet(fn: Fn, i: number, dir: number): HTMLElement {
+	private createBullet(fn: Fn, i: number, dir: -1 | 0 | 1): HTMLElement {
 		const r: HTMLElement = document.createElement('li');
-		r.addEventListener('click', (): Promise<void> => fn(i, dir));
+		r.addEventListener('click', (): void => fn(i, dir));
 		this.#rs.push(r);
 		return r;
 	}

@@ -2,13 +2,13 @@
  * Thumbnails
  *
  * @author Takuto Yanagida
- * @version 2025-03-18
+ * @version 2025-03-22
  */
 
 const CLS_SELECTOR = 'selector';
 const CLS_VISIBLE  = 'visible';
 
-type Fn = (idx: number, dir: number) => Promise<void>;
+type Fn = (idx: number, dir: -1 | 0 | 1) => void;
 
 export class Selector {
 
@@ -40,7 +40,7 @@ export class Selector {
 		return e;
 	}
 
-	private createThumbnail(li: HTMLElement, fn: Fn, i: number, dir: number): HTMLElement {
+	private createThumbnail(li: HTMLElement, fn: Fn, i: number, dir: -1 | 0 | 1): HTMLElement {
 		const r: HTMLElement = document.createElement('li');
 
 		let th: HTMLElement;
@@ -52,7 +52,7 @@ export class Selector {
 		}
 		r.appendChild(th);
 
-		r.addEventListener('click', (): Promise<void> => fn(i, dir));
+		r.addEventListener('click', (): void => fn(i, dir));
 		this.#ts.push(r);
 		return r;
 	}

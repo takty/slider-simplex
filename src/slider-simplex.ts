@@ -2,11 +2,11 @@
  * Slider Simplex
  *
  * @author Takuto Yanagida
- * @version 2025-03-18
+ * @version 2025-03-25
  */
 
 import { getStylePropertyBool, getStylePropertyFloat, getStylePropertyString } from './custom-property';
-import { repeatUntil, detectTouch, asyncTimeout, AsyncTimeoutHandle, initializeViewportDetection, callAfterDocumentReady } from './common';
+import { repeatUntil, detectTouch, repeatAnimationFrame, initializeViewportDetection, callAfterDocumentReady, wrapAround } from './common';
 
 import { Background } from './part-background.js';
 import { Navigation } from './part-navigation';
@@ -25,6 +25,9 @@ const CLS_VIEW    = 'view';
 const CLS_PAUSE   = 'pause';
 const CLS_SCROLL  = 'scroll';
 const OFFSET_VIEW = 100;
+
+// const CLS_PRE_DISPLAY = 'pre-display';
+// const CLS_DISPLAY     = 'display';
 
 const CP_EFFECT_TYPE      = '--effect-type';
 const CP_DURATION_TIME    = '--duration-time';
@@ -80,10 +83,9 @@ export class SliderSimplex {
 	#pagination: Pagination | null = null;
 	#background: Background | null = null;
 
-	curIdx   : number        = 0;
-	stStep   : AsyncTimeoutHandle | null = null;
-	lastTime : number        = 0;
-	stReserve: number | null = null;
+	#curIdx      : number  = 0;
+	#nextStepTime: number  = 0;
+	#isWaiting   : boolean = false;
 
 	constructor(root: HTMLElement) {
 		this.#root = root;
@@ -105,6 +107,9 @@ export class SliderSimplex {
 		this.#lis  = Array.from(ul.getElementsByTagName('li'));
 		this.#size = this.#lis.length;
 
+		for (const li of this.#lis) {
+			li.dataset.effectType = li.dataset.effectType ?? this.#effectType;
+		}
 		if (this.#showBackground) {
 			this.#background = new Background(this.#root, this.#lis);
 		}
@@ -117,14 +122,14 @@ export class SliderSimplex {
 		}
 		detectTouch(this.#root);
 		initializeViewportDetection(this.#root, CLS_VIEW, OFFSET_VIEW);
-		callAfterDocumentReady((): void => this.onLoad());
+		callAfterDocumentReady((): void => this.start());
 	}
 
 	getController() {
 		const fs = {
-			move: (idx: number): Promise<void> => this.transition(idx, this.#size === 2 ? 1 : 0),
-			next: (): Promise<void> => this.transition((this.curIdx === this.#size - 1) ? 0               : (this.curIdx + 1),  1),
-			prev: (): Promise<void> => this.transition((this.curIdx === 0            ) ? (this.#size - 1) : (this.curIdx - 1), -1),
+			move: (idx: number): void => this.transition(idx, this.#size === 2 ? 1 : 0),
+			next: (): void => this.transition((this.#curIdx === this.#size - 1) ? 0               : (this.#curIdx + 1),  1),
+			prev: (): void => this.transition((this.#curIdx === 0            ) ? (this.#size - 1) : (this.#curIdx - 1), -1),
 
 			onTransitionEnd: (fn: () => void): void => { this.#onTransitionEnd = fn; }
 		};
@@ -145,11 +150,12 @@ export class SliderSimplex {
 		const isScroll: boolean = this.#root.classList.contains(CLS_SCROLL);
 		let hasVideo: boolean = false;
 
-		for (const li of this.#lis) {
+		for (let i: number = 0; i < this.#lis.length; i += 1) {
+			const li: HTMLElement = this.#lis[i];
 			if (isScroll) {
 				li.classList.add(CLS_SCROLL);
 			}
-			const slide = new Slide(li);
+			const slide = new Slide(li, i % this.#size);
 			if ('video' === slide.getType()) {
 				hasVideo = true;
 			}
@@ -159,10 +165,10 @@ export class SliderSimplex {
 		ro.observe(this.#root);
 
 		switch (this.#effectType) {
-			case 'scroll': this.#effect = new TransitionScroll(this.#size, this.#lis, this.#timeTran); break;
-			case 'slide' : this.#effect = new TransitionSlide(this.#size, this.#lis, this.#timeTran); break;
-			case 'fade'  :
-			default      : this.#effect = new TransitionFade(this.#size, this.#lis, this.#timeTran); break;
+			default      :
+			case 'fade'  : this.#effect = new TransitionFade(this.#slides, this.#timeTran); break;
+			case 'slide' : this.#effect = new TransitionSlide(this.#slides, this.#timeTran); break;
+			case 'scroll': this.#effect = new TransitionScroll(this.#slides, this.#timeTran); break;
 		}
 		return hasVideo;
 	}
@@ -184,9 +190,9 @@ export class SliderSimplex {
 		return finish;
 	}
 
-	private onLoad() {
+	private start(): void {
 		if (1 < this.#size) {
-			const fn = (idx: number, dir: number) => this.transition(idx, dir);
+			const fn = (idx: number, dir: -1 | 0 | 1) => this.transition(idx, dir);
 
 			new Navigation(this.#root, this.#timeTran, fn, this.#createNavigation);
 			this.#pagination = new Pagination(this.#root, this.#size, fn, this.#createPagination);
@@ -197,28 +203,20 @@ export class SliderSimplex {
 		this.transition(0, 0);
 		setTimeout((): void => this.#root.classList.add(CLS_START), 200);
 		console.log(`Slider Simplex (#${this.#root.id}): started`);
+
+		repeatAnimationFrame((_t: number, _dt: number): void => this.step());
 	}
 
 
 	// -------------------------------------------------------------------------
 
 
-	private async transition(idx: number, dir: number): Promise<void> {
-		[idx, dir] = this.getIdxDir(idx, dir);
-
-		const t: number = window.performance.now();
-		if (dir !== 0 && t - this.lastTime < this.#timeTran * 1000) {
-			if (this.stReserve) {
-				clearTimeout(this.stReserve);
-			}
-			const to: number = this.#timeTran * 1000 - (t - this.lastTime);
-			this.stReserve = setTimeout((): Promise<void> => this.transition(idx, dir), to);
-			return;
+	private transition(idx: number, dir: -1 | 0 | 1): void {
+		if (idx === -1) {
+			idx = wrapAround(this.#curIdx + dir, this.#size);
 		}
-		this.lastTime = t;
-
 		for (let i: number = 0; i < this.#slides.length; i += 1) {
-			this.#slides[i].onPreDisplay((i % this.#size) === idx);
+			this.#slides[i].onPreDisplay((i % this.#size) === idx);  // Add/remove class 'pre-display'.
 		}
 		for (let i: number = 0; i < this.#slides.length; i += 1) {
 			this.#slides[i].transition((i % this.#size) === idx, this.#size);
@@ -228,45 +226,32 @@ export class SliderSimplex {
 		if (this.#indicator)  this.#indicator.transition(idx);
 		if (this.#selector)   this.#selector.transition(idx);
 
-		await this.#effect.transition(idx, dir);
-		if (this.#onTransitionEnd) this.#onTransitionEnd();
-		this.curIdx = idx;
-		this.display(idx);
-	}
+		this.#effect.transition(idx, dir);
+		this.#curIdx    = idx;
+		this.#isWaiting = true;
 
-	private async display(idx: number): Promise<void> {
 		for (let i: number = 0; i < this.#slides.length; i += 1) {
 			this.#slides[i].display((i % this.#size) === idx);
 		}
-		if (this.#size === 1) return;
-
-		const dt: number = this.#slides[idx].getDuration(this.#timeDur, this.#timeTran, this.#randomizeTiming);
-		if (this.stStep) {
-			this.stStep.clear();
-		}
-		this.stStep = asyncTimeout(Math.ceil(dt * 1000), (): Promise<void> => this.step());
-		await this.stStep.set();
-	}
-
-	private async step(): Promise<void> {
-		if (this.#root.classList.contains(CLS_VIEW) && !this.#root.classList.contains(CLS_PAUSE)) {
-			this.transition(-1, 1);
-		} else {
-			asyncTimeout(this.#timeDur * 1000, (): Promise<void> => this.step()).set();
+		if (1 < this.#size) {
+			const dt: number = this.#slides[idx].getDuration(this.#timeDur, this.#timeTran, this.#randomizeTiming);
+			this.#nextStepTime = window.performance.now() + (this.#timeTran + dt) * 1000;
 		}
 	}
 
-	private getIdxDir(idx: number, dir: number): [number, number] {
-		if (idx === -1) {
-			idx = this.curIdx + dir;
-			if (this.#size - 1 < idx) idx = 0;
-			if (idx < 0) idx = this.#size - 1;
-		} else if (dir === 0 && this.curIdx !== idx) {
-			const r: number = (this.curIdx < idx) ? idx - this.curIdx : idx + this.#size - this.curIdx;
-			const l: number = (idx < this.curIdx) ? this.curIdx - idx : this.curIdx + this.#size - idx;
-			dir = (l < r) ? -1 : 1;
+	private step(): void {
+		if (this.#isWaiting && !this.#effect.isTransitioning()) {
+			if (this.#onTransitionEnd) this.#onTransitionEnd();
+			this.#isWaiting = false;
 		}
-		return [idx, dir];
+		if (window.performance.now() < this.#nextStepTime) {
+			return;
+		}
+		if (!this.#root.classList.contains(CLS_VIEW) || this.#root.classList.contains(CLS_PAUSE)) {
+			return;
+		}
+		this.#nextStepTime = Number.MAX_VALUE;
+		this.transition(-1, 1);
 	}
 
 }

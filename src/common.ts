@@ -2,7 +2,7 @@
  * Common Functions
  *
  * @author Takuto Yanagida
- * @version 2025-03-18
+ * @version 2025-03-22
  */
 
 export function repeatUntil(timeout: number, fn: () => boolean): void {
@@ -24,9 +24,22 @@ export function detectTouch(elm: HTMLElement): void {
 	}
 }
 
+export function repeatAnimationFrame(fn: (timestamp: number, deltaTime: number) => void): void {
+	let tl: number = 0;
+	const cb: FrameRequestCallback = (t: number): void => {
+		if (tl !== 0) {
+			fn(t, t - tl);
+		}
+		tl = t;
+		window.requestAnimationFrame(cb);
+	}
+	window.requestAnimationFrame(cb);
 
-// -----------------------------------------------------------------------------
+}
 
+export function wrapAround(n: number, size: number): number {
+	return size <= n ? n - size : (n < 0 ? size + n : n);
+}
 
 export function callAfterDocumentReady(fn: () => void): void {
 	if ('loading' === document.readyState) {
@@ -34,41 +47,6 @@ export function callAfterDocumentReady(fn: () => void): void {
 	} else {
 		setTimeout(fn, 0);
 	}
-}
-
-
-// -----------------------------------------------------------------------------
-
-
-export interface AsyncTimeoutHandle {
-	set  : () => Promise<void>;
-	clear: () => void;
-};
-
-export function asyncTimeout(ms: number, fn: () => Promise<void>): AsyncTimeoutHandle {
-	let tid: number | null = null;
-	let res: () => void;
-	return {
-		set: (): Promise<void> => new Promise((r) => {
-			res = r
-			tid = setTimeout(async (): Promise<void> => {
-				tid = null;
-				await fn();
-				r();
-			}, ms);
-		}),
-		clear: (): void => {
-			if (tid) {
-				clearTimeout(tid);
-				tid = null;
-				res();
-			}
-		}
-	};
-}
-
-export async function wait(ms: number): Promise<void> {
-	return new Promise((r) => setTimeout(r, ms));
 }
 
 

@@ -2,22 +2,22 @@
  * Navigation Buttons
  *
  * @author Takuto Yanagida
- * @version 2025-03-15
+ * @version 2025-03-25
  */
 
 const CLS_NAVIGATION = 'navigation';
 const CLS_ACTIVE     = 'active';
-const CLS_DISABLED   = 'disabled';
+// const CLS_DISABLED   = 'disabled';
 
 const DX_FLICK: number = 32;
 
-type Fn = (idx: number, dir: number) => Promise<void>;
+type Fn = (idx: number, dir: -1 | 0 | 1) => void;
 
 export class Navigation {
 
 	#base!: HTMLElement;
 
-	#fs!: (() => Promise<void>)[];
+	#fs!: (() => void)[];
 	#bs!: HTMLElement[];
 
 	constructor(root: HTMLElement, timeTran: number, fn: Fn, forced: boolean = true) {
@@ -33,8 +33,8 @@ export class Navigation {
 		this.#base = base;
 
 		this.#fs = [
-			async (): Promise<void> => await fn(-1, -1),
-			async (): Promise<void> => await fn(-1,  1),
+			(): void => fn(-1, -1),
+			(): void => fn(-1,  1),
 		];
 		this.#bs = this.createButtons();
 
@@ -59,17 +59,17 @@ export class Navigation {
 		}
 		for (let i: number = 0; i < 2; i += 1) {
 			bs[i].classList.add(CLS_NAVIGATION);
-			bs[i].addEventListener('click', async (): Promise<void> => this.doClick(i));
+			bs[i].addEventListener('click', (): void => this.doClick(i));
 		}
 		return bs;
 	}
 
-	private async doClick(dir: number): Promise<void> {
-		this.#bs[0].classList.add(CLS_DISABLED);
-		this.#bs[1].classList.add(CLS_DISABLED);
-		await this.#fs[dir]();
-		this.#bs[0].classList.remove(CLS_DISABLED);
-		this.#bs[1].classList.remove(CLS_DISABLED);
+	private doClick(dir: number): void {
+		// this.#bs[0].classList.add(CLS_DISABLED);
+		// this.#bs[1].classList.add(CLS_DISABLED);
+		this.#fs[dir]();
+		// this.#bs[0].classList.remove(CLS_DISABLED);
+		// this.#bs[1].classList.remove(CLS_DISABLED);
 	}
 
 	private setActive(flag: boolean): void {

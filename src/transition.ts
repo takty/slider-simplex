@@ -2,26 +2,24 @@
  * Transition
  *
  * @author Takuto Yanagida
- * @version 2025-03-18
+ * @version 2025-03-24
  */
 
-import { wait } from './common';
+import { repeatAnimationFrame, wrapAround } from './common';
+import { Slide } from './slide';
 
 export abstract class Transition {
 
-	protected _size: number;
-	protected _lis : HTMLLIElement[];
-	protected _time: number;
+	abstract transition(_idx: number, _dir: number): void;
 
-	constructor(size: number, lis: HTMLLIElement[], tranTime: number) {
-		this._size = size;
-		this._lis  = lis;
-		this._time = tranTime;
-	}
-
-	abstract transition(idx: number, dir: number): Promise<void>;
+	abstract isTransitioning(): boolean;
 
 }
+
+type Item = {
+	s: Slide,
+	v: number,
+};
 
 
 // -----------------------------------------------------------------------------
@@ -29,26 +27,71 @@ export abstract class Transition {
 
 export class TransitionFade extends Transition {
 
-	constructor(size: number, lis: HTMLLIElement[], tranTime: number) {
-		super(size, lis, tranTime);
+	#its            : Item[];
+	#current        : number = 0;
+	#beforeFirstStep: boolean = false;
 
-		for (let i: number = 0; i < this._size; i += 1) {
-			this._lis[i].style.opacity = (i === 0) ? '1' : '0';
+	constructor(ss: Slide[], tranTime: number) {
+		super();
+
+		this.#its = this.createItems(ss);
+
+		this.update();
+		repeatAnimationFrame((_t: number, dt: number): void => this.step(dt, tranTime));
+	}
+
+	private createItems(ss: Slide[]): Item[] {
+		const its: Item[] = [];
+
+		for (let i: number = 0; i < ss.length; i += 1) {
+			its.push({
+				s: ss[i],
+				v: i === 0 ? 1 : 0,
+			});
 		}
-		setTimeout((): void => {
-			for (let i: number = 0; i < this._size; i += 1) {
-				this._lis[i].style.transition = 'opacity ' + this._time + 's';
+		return its;
+	}
+
+	private update(): void {
+		for (const it of this.#its) {
+			it.s.getBase().style.opacity       = `${it.v}`;
+			it.s.getBase().style.pointerEvents = (it.v === 1) ? 'auto' : 'none';
+		}
+	}
+
+	transition(idx: number, _dir: number): void {
+		this.#current         = idx;
+		this.#beforeFirstStep = true;
+	}
+
+	isTransitioning(): boolean {
+		if (this.#beforeFirstStep) {
+			return true;
+		}
+		for (const it of this.#its) {
+			if (it.s.getIndex() === this.#current) {
+				if (it.v < 1) return true;
+			} else {
+				if (0 < it.v) return true;
 			}
-		}, 10);
+		}
+		return false;
 	}
 
-	async transition(idx: number, _dir: number): Promise<void> {
-		for (let i: number = 0; i < this._size; i += 1) {
-			this._lis[i].style.opacity       = (i === idx) ? '1' : '0';
-			this._lis[i].style.pointerEvents = (i === idx) ? 'auto' : 'none';
+	private step(dt: number, tranTime: number): void {
+		this.#beforeFirstStep = false;
+
+		const r: number = dt / (tranTime * 1000);
+		for (const it of this.#its) {
+			if (it.s.getIndex() === this.#current) {
+				it.v = Math.min(1, it.v + r);
+			} else {
+				it.v = Math.max(0, it.v - r);
+			}
 		}
-		await wait(this._time * 1000);
+		this.update();
 	}
+
 }
 
 
@@ -57,25 +100,68 @@ export class TransitionFade extends Transition {
 
 export class TransitionSlide extends Transition {
 
-	constructor(size: number, lis: HTMLLIElement[], tranTime: number) {
-		super(size, lis, tranTime);
+	#its            : Item[];
+	#current        : number = 0;
+	#beforeFirstStep: boolean = false;
 
-		for (let i: number = 0; i < this._size; i += 1) {
-			this._lis[i].style.transform = 'translateX(' + (i ? 100 : 0) + '%)';
-		}
-		setTimeout((): void => {
-			for (let i: number = 0; i < this._size; i += 1) {
-				this._lis[i].style.opacity    = '1';
-				this._lis[i].style.transition = 'transform ' + this._time + 's';
-			}
-		}, 10);
+	constructor(ss: Slide[], tranTime: number) {
+		super();
+
+		this.#its = this.createItems(ss);
+
+		this.update();
+		repeatAnimationFrame((_t: number, dt: number): void => this.step(dt, tranTime));
 	}
 
-	async transition(idx: number, _dir: number): Promise<void> {
-		for (let i: number = 0; i < this._size; i += 1) {
-			this._lis[i].style.transform = (i <= idx) ? 'translateX(0%)' : 'translateX(100%)';
+	private createItems(ss: Slide[]): Item[] {
+		const its: Item[] = [];
+
+		for (let i: number = 0; i < ss.length; i += 1) {
+			its.push({
+				s: ss[i],
+				v: i === 0 ? 0 : 1,
+			});
 		}
-		await wait(this._time * 1000);
+		return its;
+	}
+
+	private update(): void {
+		for (const it of this.#its) {
+			it.s.getBase().style.transform = `translateX(${it.v * 100}%)`;
+		}
+	}
+
+	transition(idx: number, _dir: number): void {
+		this.#current         = idx;
+		this.#beforeFirstStep = true;
+	}
+
+	isTransitioning(): boolean {
+		if (this.#beforeFirstStep) {
+			return true;
+		}
+		for (const it of this.#its) {
+			if (it.s.getIndex() <= this.#current) {
+				if (0 < it.v) return true;
+			} else {
+				if (it.v < 1) return true;
+			}
+		}
+		return false;
+	}
+
+	private step(dt: number, tranTime: number): void {
+		this.#beforeFirstStep = false;
+
+		const r: number = dt / (tranTime * 1000);
+		for (const it of this.#its) {
+			if (it.s.getIndex() <= this.#current) {
+				it.v = Math.max(0, it.v - r);
+			} else {
+				it.v = Math.min(1, it.v + r);
+			}
+		}
+		this.update();
 	}
 
 }
@@ -86,104 +172,149 @@ export class TransitionSlide extends Transition {
 
 export class TransitionScroll extends Transition {
 
-	_cur   : number  = 0;
-	_curPsd: number  = 0;
-	_doing : boolean = false;
+	#its  : Item[];
+	#shift: number = 0;
+	#speed: number = 0;
 
-	_queue: ((cur: number, curPsd: number) => Promise<[number, number]>)[] = [];
+	#sideSize: number = 2;
 
-	constructor(size: number, lis: HTMLLIElement[], tranTime: number) {
-		super(size, lis, tranTime);
+	constructor(ss: Slide[], tranTime: number) {
+		super();
 
-		const ps: number[] = this.calcPosition(0, 1);
-		for (let i: number = 0; i < this._lis.length; i += 1) {
-			this._lis[i].style.opacity   = '1';
-			this._lis[i].style.transform = `translateX(${ps[i] * 100}%)`;
+		this.#its = this.createItems(ss);
+
+		this.update();
+		repeatAnimationFrame((_t: number, dt: number): void => this.step(dt, tranTime));
+
+		// const map = new WeakMap<HTMLElement, Slide>();
+		// for (const s of ss) {
+		// 	map.set(s.getBase(), s);
+		// }
+
+		// const CLS_PRE_DISPLAY = 'pre-display';
+		// const CLS_DISPLAY     = 'display';
+
+		// const io = new IntersectionObserver((es: IntersectionObserverEntry[]): void => {
+		// 	for (const e of es) {
+		// 		const s = map.get(e.target as HTMLElement) as Slide;
+		// 		s.setState(CLS_PRE_DISPLAY, e.isIntersecting);
+		// 		s.setState(CLS_DISPLAY, 0.9 < e.intersectionRatio);
+		// 		console.log(e.intersectionRatio);
+		// 	}
+		// }
+		// , { root: this.#its[0].s.getBase().parentElement, rootMargin: '-1px', threshold: 0 });
+		// for (const it of this.#its) {
+		// 	io.observe(it.s.getBase());
+		// }
+	}
+
+	private createItems(ss: Slide[]): Item[] {
+		const its: Item[] = [];
+		const off: number = Math.floor(ss.length / 2);
+
+		for (let i: number = 0; i < ss.length; i += 1) {
+			its.push({
+				s: ss.at(i - off) as Slide,
+				v: i - off,
+			});
+		}
+		return its;
+	}
+
+	private update(): void {
+		for (const it of this.#its) {
+			it.s.getBase().style.transform = `translateX(${it.v * 100}%)`;
 		}
 	}
 
-	async transition(idx: number, dir: number): Promise<void> {
-		this._queue.push((cur: number, curPsd: number) => this.doTransition(cur, curPsd, idx, dir));
-		if (this._doing) return;
-		this._doing = true;
-		while (this._queue.length) {
-			const fn = this._queue.shift() as (cur: number, curPsd: number) => Promise<[number, number]>;
-			[this._cur, this._curPsd] = (await fn(this._cur, this._curPsd)) as [number, number];
+	transition(idx: number, dir: number): void {
+		let off: number = this.getCurrent();
+
+		let minDx: number = Number.MAX_VALUE;
+		let tar: Item | null= null;
+
+		if (0 <= dir) {
+			for (let i: number = 0; i < this.#its.length; i += 1) {
+				const it = this.#its.at(wrapAround(i + off, this.#its.length)) as Item;
+				if (it.s.getIndex() === idx) {
+					if ((dir === 0 || 0 < it.v) && Math.abs(it.v) < minDx) {
+						minDx = Math.abs(it.v);
+						tar   = it;
+					}
+				}
+			}
+		} else if (dir < 0) {
+			for (let i: number = this.#its.length - 1; 0 <= i; i -= 1) {
+				const it = this.#its.at(wrapAround(i + off, this.#its.length)) as Item;
+				if (it.s.getIndex() === idx) {
+					if (it.v < 0 && Math.abs(it.v) < minDx) {
+						minDx = Math.abs(it.v);
+						tar   = it;
+					}
+				}
+			}
 		}
-		this._doing = false;
+		if (tar) {
+			this.#shift = tar.v;
+			this.#speed = Math.max(1, Math.abs(this.#shift));
+		}
 	}
 
-	private async doTransition(curIdx: number, curIdxPsd: number, idx: number, dir: number): Promise<[number, number]> {
-		if (0 === dir && curIdx !== idx) {
-			const r: number = (curIdx < idx) ? idx - curIdx : idx + this._size - curIdx;
-			const l: number = (idx < curIdx) ? curIdx - idx : curIdx + this._size - idx;
-			dir = (l < r) ? -1 : 1;
-		}
-		let ps: number[] = this.calcPosition(curIdxPsd, dir);
-		for (let i: number = 0; i < this._lis.length; i += 1) {
-			this._lis[i].style.transition = '';
-			this._lis[i].style.transform  = `translateX(${ps[i] * 100}%)`;
-		}
-		await wait(100);
-
-		let d: number = 0;
-		if (dir ===  1) d = idx - curIdx;
-		if (dir === -1) d = curIdx - idx;
-		if (d < 0) d += this._size;
-
-		let idxPsd: number = curIdxPsd;
-		for (let i: number = 0; i < d; i += 1) {
-			[ps, idxPsd] = this.shift(ps, idxPsd, dir, this._time / d, this.getTransition(d, i));
-			await wait(Math.floor(this._time * 1000 / d));
-		}
-		return [idx, idxPsd];
+	isTransitioning(): boolean {
+		return this.#shift !== 0;
 	}
 
-	private getTransition(d: number, i: number) {
-		if (d === 1) return 'ease';
-		if (d === 2) {
-			if (i === 0) return 'ease-in';
-			if (i === 1) return 'ease-out';
+	private getCurrent(): number {
+		let minDx: number = Number.MAX_VALUE;
+		let cur  : number = 0;
+
+		for (let i: number = 0; i < this.#its.length; i += 1) {
+			const it = this.#its.at(i) as Item;
+			if (Math.abs(it.v) < minDx) {
+				minDx = Math.abs(it.v);
+				cur   = i;
+			}
 		}
-		return 'linear';
+		return cur;
 	}
 
-	private shift(curPs: number[], curIdxPsd: number, dir: number, time: number, tf = 'ease'): [number[], number] {
-		const lenPsd: number = this._lis.length;
-
-		let idxPsd: number = curIdxPsd + dir;
-		if (lenPsd - 1 < idxPsd) idxPsd = 0;
-		if (idxPsd < 0) idxPsd = lenPsd - 1;
-
-		const ps: number[] = this.calcPosition(idxPsd, dir);
-
-		for (let i: number = 0; i < lenPsd; i += 1) {
-			const t: string = (Math.abs(curPs[i] - ps[i]) === 1) ? `transform ${time}s ${tf}` : '';
-			this._lis[i].style.transition = t;
-			this._lis[i].style.transform  = `translateX(${ps[i] * 100}%)`;
+	private step(dt: number, tranTime: number): void {
+		let r: number = this.#speed * dt / (tranTime * 1000);
+		if (Math.abs(this.#shift) < 0.1) {
+			r /= (1 + (0.1 - Math.abs(this.#shift)) * 10);
 		}
-		return [ps, idxPsd];
-	}
 
-	private calcPosition(idxPsd: number, dir: number): number[] {
-		const lenPsd: number = this._lis.length;
-		const ps     = new Array(lenPsd);
-
-		const hs: number = (dir !== -1) ? Math.ceil((lenPsd - 1) / 2) : Math.floor((lenPsd - 1) / 2);
-		const rs: number = lenPsd - 1 - hs;
-
-		for (let i: number = 1; i <= hs; i += 1) {
-			let j: number = idxPsd + i;
-			if (lenPsd - 1 < j) j -= lenPsd;
-			ps[j] = i;
+		const doFit: boolean = Math.abs(this.#shift) < r;
+		if (this.#shift < 0) {
+			r = Math.min(r, -this.#shift);
+			this.#shift += r;
+			for (const it of this.#its) {
+				it.v += r;
+			}
+			if (this.#sideSize + 0.5 < (this.#its.at(-1) as Item).v) {
+				const it = this.#its.pop() as Item;
+				it.v = (this.#its.at(0) as Item).v - 1;
+				this.#its.unshift(it);
+			}
+		} else if (0 < this.#shift) {
+			r = Math.min(r, this.#shift);
+			this.#shift -= r;
+			for (const it of this.#its) {
+				it.v -= r;
+			}
+			if ((this.#its.at(0) as Item).v < -(this.#sideSize + 0.5)) {
+				const it = this.#its.shift() as Item;
+				it.v = (this.#its.at(-1) as Item).v + 1;
+				this.#its.push(it);
+			}
 		}
-		for (let i: number = 1; i <= rs; i += 1) {
-			let j: number = idxPsd - i;
-			if (j < 0) j += lenPsd;
-			ps[j] = -i;
+		if (doFit) {
+			this.#shift = 0;
+			for (const it of this.#its) {
+				it.v = Math.round(it.v);
+			}
 		}
-		ps[idxPsd] = 0;
-		return ps;
+		this.update();
 	}
 
 }

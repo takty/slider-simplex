@@ -2,7 +2,7 @@
  * Slide
  *
  * @author Takuto Yanagida
- * @version 2025-03-18
+ * @version 2025-03-23
  */
 
 import { Caption } from './caption';
@@ -13,10 +13,15 @@ const CLS_DISPLAY     = 'display';
 
 export class Slide {
 
+	#li : HTMLElement;
+	#idx: number;
 	#mnt: Mount;
 	#cap: Caption | null;
 
-	constructor(li: HTMLLIElement, useCaption: boolean = true) {
+	constructor(li: HTMLElement, idx: number, useCaption: boolean = true) {
+		this.#li  = li;
+		this.#idx = idx;
+
 		this.#cap = useCaption ? Caption.create(li) : null;
 		if (li.querySelector(':scope > video, :scope > a > video')) {
 			this.#mnt  = new MountVideo(li);
@@ -25,8 +30,28 @@ export class Slide {
 		}
 	}
 
+	getBase(): HTMLElement {
+		return this.#li;
+	}
+
+	getIndex(): number {
+		return this.#idx;
+	}
+
 	getType(): string {
 		return this.#mnt.getType();
+	}
+
+	setState(state: string, flag: boolean): void {
+		if (flag) {
+			this.#li.classList.add(state);
+		} else {
+			this.#li.classList.remove(state);
+		}
+		this.#mnt.setState(state, flag);
+		if (this.#cap) {
+			this.#cap.setState(state, flag);
+		}
 	}
 
 	onResize(): boolean {
@@ -36,10 +61,7 @@ export class Slide {
 	}
 
 	onPreDisplay(isCur: boolean): void {
-		this.#mnt.setState(CLS_PRE_DISPLAY, isCur);
-		if (this.#cap) {
-			this.#cap.setState(CLS_PRE_DISPLAY, isCur);
-		}
+		this.setState(CLS_PRE_DISPLAY, isCur);
 	}
 
 	transition(isCur: boolean, size: number): void {
@@ -47,10 +69,7 @@ export class Slide {
 	}
 
 	display(isCur: boolean): void {
-		this.#mnt.setState(CLS_DISPLAY, isCur);
-		if (this.#cap) {
-			this.#cap.setState(CLS_DISPLAY, isCur);
-		}
+		this.setState(CLS_DISPLAY, isCur);
 		this.#mnt.display(isCur);
 	}
 
