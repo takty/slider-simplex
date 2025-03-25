@@ -2,7 +2,7 @@
  * Styles for Sample
  *
  * @author Takuto Yanagida
- * @version 2022-09-09
+ * @version 2025-03-25
  */
 
 
@@ -97,16 +97,12 @@ pre {
 	--size-width : 24rem;
 	--slide-ratio: 1;
 
-	.image {
-		img {
-			border    : 2rem solid transparent;
-			transition: border-width 1s;
-		}
-		&.pre-display img {
+	.slides > li {
+		border    : 2rem solid transparent;
+		transition: border-width 1s;
+
+		&.pre-display {
 			border-width: 0;
 		}
-	}
-	.caption:not(.pre-display) {
-		opacity: 0;
 	}
 }
