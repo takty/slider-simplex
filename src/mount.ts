@@ -94,7 +94,7 @@ export class MountImage extends Mount {
 export class MountVideo extends Mount {
 
 	#video!: HTMLVideoElement;
-	#ar    : number | null = null;
+	// #ar    : number | null = null;
 
 	constructor(li: HTMLElement) {
 		super(li);
@@ -107,10 +107,10 @@ export class MountVideo extends Mount {
 			v.playsInline = true;
 			v.setAttribute('muted', 'true');
 			v.setAttribute('playsinline', 'true');
-			v.addEventListener('loadedmetadata', (): void => {
-				const ar: number = v.clientWidth / v.clientHeight;
-				this.#ar = (0 | (ar * 1000)) / 1000;
-			});
+			// v.addEventListener('loadedmetadata', (): void => {
+			// 	const ar: number = v.clientWidth / v.clientHeight;
+			// 	this.#ar = (0 | (ar * 1000)) / 1000;
+			// });
 			this.#video = v;
 			this.base.appendChild(v);
 		}
@@ -142,15 +142,15 @@ export class MountVideo extends Mount {
 	}
 
 	onResize(): boolean {
-		if (!this.#ar) return false;
-		const arFrame = this.base.clientWidth / this.base.clientHeight;
-		if (this.#ar < arFrame) {
-			this.#video.classList.remove('height');
-			this.#video.classList.add('width');
-		} else {
-			this.#video.classList.remove('width');
-			this.#video.classList.add('height');
-		}
+		// if (!this.#ar) return false;
+		// const arFrame = this.base.clientWidth / this.base.clientHeight;
+		// if (this.#ar < arFrame) {
+		// 	this.#video.classList.remove('height');
+		// 	this.#video.classList.add('width');
+		// } else {
+		// 	this.#video.classList.remove('width');
+		// 	this.#video.classList.add('height');
+		// }
 		return true;
 	}
 

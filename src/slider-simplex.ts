@@ -114,9 +114,9 @@ export class SliderSimplex {
 			ul.style.overflow = 'visible';
 		}
 		const hasVideo: boolean = this.initSlides();
-		if (hasVideo) {
-			repeatUntil(100, (): boolean => this.onResizeSlide());
-		}
+		// if (hasVideo) {
+		// 	repeatUntil(100, (): boolean => this.onResizeSlide());
+		// }
 		detectTouch(this.#root);
 		initializeViewportDetection(this.#root, CLS_VIEW, OFFSET_VIEW);
 		callAfterDocumentReady((): void => this.start());

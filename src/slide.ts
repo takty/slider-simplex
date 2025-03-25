@@ -52,7 +52,7 @@ export class Slide {
 	}
 
 	onResize(): boolean {
-		if (!this.#mnt.onResize()) return false;
+		// if (!this.#mnt.onResize()) return false;
 		if (this.#cap) this.#cap.onResize();
 		return true;
 	}

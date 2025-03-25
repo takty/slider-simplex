@@ -101,7 +101,7 @@ pre {
 		border    : 2rem solid transparent;
 		transition: border-width 1s;
 
-		&.pre-display {
+		&:is(.in, .display) {
 			border-width: 0;
 		}
 	}

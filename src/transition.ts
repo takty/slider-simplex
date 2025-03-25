@@ -10,6 +10,8 @@ import { Slide } from './slide';
 
 const CLS_PRE_DISPLAY = 'pre-display';
 const CLS_DISPLAY     = 'display';
+const CLS_IN          = 'in';
+const CLS_OUT         = 'out';
 
 export abstract class Transition {
 
@@ -57,7 +59,7 @@ export class TransitionFade extends Transition {
 
 	private update(): void {
 		for (const it of this.#its) {
-			it.s.getBase().style.opacity       = `${it.v}`;
+			it.s.getBase().style.opacity       = `${it.v.toFixed(4)}`;
 			it.s.getBase().style.pointerEvents = (it.v === 1) ? 'auto' : 'none';
 		}
 	}
@@ -86,11 +88,19 @@ export class TransitionFade extends Transition {
 
 		const r: number = dt / (tranTime * 1000);
 		for (const it of this.#its) {
-			if (it.s.getIndex() === this.#current) {
+			const isCur: boolean = it.s.getIndex() === this.#current;
+			if (isCur) {
 				it.v = Math.min(1, it.v + r);
+				it.s.setState(CLS_IN, 0 < it.v && it.v < 1);
 			} else {
 				it.v = Math.max(0, it.v - r);
+				it.s.setState(CLS_OUT, 0 < it.v && it.v < 1);
 			}
+			if (it.v < 0.01) it.v = 0;
+			if (0.99 < it.v) it.v = 1;
+
+			it.s.setState(CLS_IN, isCur && 0 < it.v && it.v < 1);
+			it.s.setState(CLS_OUT, !isCur && 0 < it.v && it.v < 1);
 			it.s.setState(CLS_PRE_DISPLAY, 0 < it.v && it.v < 1);
 			it.s.setState(CLS_DISPLAY, it.v === 1);
 		}
@@ -132,7 +142,7 @@ export class TransitionSlide extends Transition {
 
 	private update(): void {
 		for (const it of this.#its) {
-			it.s.getBase().style.transform = `translateX(${it.v * 100}%)`;
+			it.s.getBase().style.transform = `translateX(${(it.v * 100).toFixed(2)}%)`;
 		}
 	}
 
@@ -160,11 +170,20 @@ export class TransitionSlide extends Transition {
 
 		const r: number = dt / (tranTime * 1000);
 		for (const it of this.#its) {
-			if (it.s.getIndex() <= this.#current) {
-				it.v = Math.max(0, it.v - r);
-			} else {
-				it.v = Math.min(1, it.v + r);
+			let l: number = r;
+			if (this.#current === it.s.getIndex() && Math.abs(it.v) < 0.1) {
+				l = r * Math.sin(Math.abs(it.v) * 10 * (Math.PI / 2));
 			}
+			if (this.#current !== it.s.getIndex() && Math.abs(it.v) > 0.9) {
+				l = r * Math.sin(Math.abs(1 - it.v) * 10 * (Math.PI / 2));
+			}
+			if (it.s.getIndex() <= this.#current) {
+				it.v = Math.max(0, it.v - l);
+			} else {
+				it.v = Math.min(1, it.v + l);
+			}
+			if (it.v < 0.01) it.v = 0;
+			if (0.99 < it.v) it.v = 1;
 		}
 		let isTransitioning: boolean = false;
 		for (let i: number = this.#its.length - 1; 0 <= i; i -= 1) {
@@ -172,11 +191,11 @@ export class TransitionSlide extends Transition {
 			if (0 < it.v && it.v < 1) {
 				isTransitioning = true;
 			}
-			it.s.setState(CLS_PRE_DISPLAY, 0 < it.v && it.v < 1);
-
-			if (it.s.getIndex() === this.#current) {
-				it.s.setState(CLS_DISPLAY, !isTransitioning && it.v === 0);
-			}
+			const isCur: boolean = it.s.getIndex() === this.#current;
+			it.s.setState(CLS_IN, isCur && isTransitioning);
+			it.s.setState(CLS_OUT, !isCur && isTransitioning);
+			it.s.setState(CLS_PRE_DISPLAY, isTransitioning);
+			it.s.setState(CLS_DISPLAY, isCur && !isTransitioning && it.v === 0);
 		}
 		this.update();
 	}
@@ -189,9 +208,10 @@ export class TransitionSlide extends Transition {
 
 export class TransitionScroll extends Transition {
 
-	#its  : Item[];
-	#shift: number = 0;
-	#speed: number = 0;
+	#its    : Item[];
+	#current: number = 0;
+	#shift  : number = 0;
+	#speed  : number = 0;
 
 	#sideSize: number = 2;
 
@@ -224,6 +244,7 @@ export class TransitionScroll extends Transition {
 	}
 
 	transition(idx: number, dir: number): void {
+		this.#current = idx;
 		let off: number = this.getCurrent();
 
 		let minDx: number = Number.MAX_VALUE;
@@ -277,9 +298,8 @@ export class TransitionScroll extends Transition {
 	private step(dt: number, tranTime: number): void {
 		let r: number = this.#speed * dt / (tranTime * 1000);
 		if (Math.abs(this.#shift) < 0.1) {
-			r /= (1 + (0.1 - Math.abs(this.#shift)) * 10);
+			r *= Math.sin(Math.abs(this.#shift) * 10 * (Math.PI / 2));
 		}
-
 		const doFit: boolean = Math.abs(this.#shift) < r;
 		if (this.#shift < 0) {
 			r = Math.min(r, -this.#shift);
@@ -313,9 +333,14 @@ export class TransitionScroll extends Transition {
 
 		const ul = this.#its[0].s.getBase().parentElement as HTMLElement;
 		for (const it of this.#its) {
-			const e: number = getOverlapRatio(it.s.getBase(), ul);
-			it.s.setState(CLS_PRE_DISPLAY, 0 < e);
-			it.s.setState(CLS_DISPLAY, 0.99 < e);
+			let e: number = getOverlapRatio(it.s.getBase(), ul);
+			if (e < 0.01) e = 0;
+			if (0.99 < e) e = 1;
+			const isCur: boolean = it.s.getIndex() === this.#current;
+			it.s.setState(CLS_IN, isCur && 0 < e && e < 1);
+			it.s.setState(CLS_OUT, !isCur && 0 < e && e < 1);
+			it.s.setState(CLS_PRE_DISPLAY, 0 < e && e < 1);
+			it.s.setState(CLS_DISPLAY, e === 1);
 		}
 		this.update();
 	}
