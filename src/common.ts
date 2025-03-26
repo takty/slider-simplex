@@ -2,8 +2,16 @@
  * Common Functions
  *
  * @author Takuto Yanagida
- * @version 2025-03-25
+ * @version 2025-03-26
  */
+
+export function wrapAround(n: number, size: number): number {
+	return size <= n ? n - size : (n < 0 ? size + n : n);
+}
+
+
+// -----------------------------------------------------------------------------
+
 
 export function detectTouch(elm: HTMLElement): void {
 	if (0 < navigator.maxTouchPoints) {
@@ -13,6 +21,10 @@ export function detectTouch(elm: HTMLElement): void {
 		}, { once: true });
 	}
 }
+
+
+// -----------------------------------------------------------------------------
+
 
 export function repeatAnimationFrame(fn: (timestamp: number, deltaTime: number) => void): void {
 	let tl: number = 0;
@@ -25,10 +37,6 @@ export function repeatAnimationFrame(fn: (timestamp: number, deltaTime: number) 
 	}
 	window.requestAnimationFrame(cb);
 
-}
-
-export function wrapAround(n: number, size: number): number {
-	return size <= n ? n - size : (n < 0 ? size + n : n);
 }
 
 export function callAfterDocumentReady(fn: () => void): void {
@@ -63,4 +71,42 @@ export function initializeViewportDetection(root: HTMLElement, cls: string, offs
 			root.classList.remove(cls);
 		}
 	});
+}
+
+
+// -----------------------------------------------------------------------------
+
+
+export function waitForAllImages(is: HTMLImageElement[]): Promise<boolean> {
+	return Promise.all(
+		is.map((i: HTMLImageElement): Promise<void> => {
+			if (i.complete && i.naturalWidth !== 0) {
+				return Promise.resolve();
+			}
+			return new Promise<void>((resolve, reject) => {
+				i.addEventListener('load', (): void => resolve(), { once: true });
+				i.addEventListener('error', (): void => reject(new Error('Image failed to load')), { once: true });
+			});
+		})
+	).then(
+		(): boolean => true,
+		(): boolean => false
+	);
+}
+
+export function waitForAllVideos(vs: HTMLVideoElement[]): Promise<boolean> {
+	return Promise.all(
+		vs.map((v: HTMLVideoElement): Promise<void> => {
+			if (v.readyState >= 1) {  // HAVE_METADATA
+				return Promise.resolve();
+			}
+			return new Promise<void>((resolve, reject) => {
+				v.addEventListener('loadedmetadata', (): void => resolve(), { once: true });
+				v.addEventListener('error', (): void => reject(new Error('Video failed to load metadata')), { once: true });
+			});
+		})
+	).then(
+		(): boolean => true,
+		(): boolean => false
+	);
 }

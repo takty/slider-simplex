@@ -2,10 +2,22 @@
  * Custom Property Utilities
  *
  * @author Takuto Yanagida
- * @version 2025-03-18
+ * @version 2025-03-26
  */
 
-export function getStylePropertyBool(elm: HTMLElement, prop: string, def: boolean = false): boolean {
+export function getStylePropertyBool(
+	elm: HTMLElement,
+	prop: string,
+	def?: boolean
+): boolean;
+
+export function getStylePropertyBool(
+	elm: HTMLElement,
+	prop: string,
+	def: null
+): boolean | null;
+
+export function getStylePropertyBool(elm: HTMLElement, prop: string, def: boolean | null = false): boolean | null {
 	const v: string = getPropValue(elm, prop);
 	if (!v.length) return def;
 	if (typeof v !== 'string') return Boolean(v);

@@ -52,8 +52,12 @@ export class Slide {
 		if (this.#cap) this.#cap.onResize();
 	}
 
-	getDuration(timeDur: number, timeTran: number, doRandom: boolean): number {
-		return this.#mnt.getDuration(timeDur, timeTran, doRandom);
+	isLoaded(): Promise<boolean> {
+		return this.#mnt.isLoaded();
+	}
+
+	getDuration(timeDur: number, timeTran: number, randomRate: number): number {
+		return this.#mnt.getDuration(timeDur, timeTran, randomRate);
 	}
 
 }

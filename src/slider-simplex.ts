@@ -24,12 +24,13 @@ const CLS_START   = 'start';
 const CLS_VIEW    = 'view';
 const CLS_PAUSE   = 'pause';
 const CLS_SCROLL  = 'scroll';
-const OFFSET_VIEW = 100;
 
 const CP_EFFECT_TYPE      = '--effect-type';
 const CP_DURATION_TIME    = '--duration-time';
 const CP_TRANSITION_TIME  = '--transition-time';
+
 const CP_RANDOMIZE_TIMING = '--randomize-timing';
+const CP_RANDOM_RATE      = '--random-rate';
 
 const CP_SHOW_BACKGROUND  = '--show-background';
 const CP_SHOW_SIDE_SLIDE  = '--show-side-slide';
@@ -37,6 +38,8 @@ const CP_SHOW_SIDE_SLIDE  = '--show-side-slide';
 const CP_CREATE_NAVIGATION = '--create-navigation';
 const CP_CREATE_PAGINATION = '--create-pagination';
 const CP_CREATE_SELECTOR   = '--create-selector';
+
+const CP_VIEW_OFFSET = '--view-offset';
 
 export class SliderSimplex {
 
@@ -59,7 +62,7 @@ export class SliderSimplex {
 	#effectType      : string
 	#timeDur         : number
 	#timeTran        : number
-	#randomizeTiming : boolean
+	#randomRate      : number
 
 	#showBackground  : boolean;
 	#showSideSlide   : boolean;
@@ -90,8 +93,15 @@ export class SliderSimplex {
 		this.#effectType       = getStylePropertyString(this.#root, CP_EFFECT_TYPE, 'fade');
 		this.#timeDur          = getStylePropertyFloat(this.#root, CP_DURATION_TIME, 8);
 		this.#timeTran         = getStylePropertyFloat(this.#root, CP_TRANSITION_TIME, 1);
-		this.#randomizeTiming  = getStylePropertyBool(this.#root, CP_RANDOMIZE_TIMING);
 
+		const rt: boolean | null = getStylePropertyBool(this.#root, CP_RANDOMIZE_TIMING, null);
+		if (rt) {
+			this.#randomRate = getStylePropertyFloat(this.#root, CP_RANDOM_RATE, 10);
+		} else if (rt === null) {
+			this.#randomRate = getStylePropertyFloat(this.#root, CP_RANDOM_RATE, 0);
+		} else {
+			this.#randomRate = 0;
+		}
 		this.#showBackground   = getStylePropertyBool(this.#root, CP_SHOW_BACKGROUND, false);
 		this.#showSideSlide    = getStylePropertyBool(this.#root, CP_SHOW_SIDE_SLIDE, false);
 
@@ -99,8 +109,11 @@ export class SliderSimplex {
 		this.#createPagination = getStylePropertyBool(this.#root, CP_CREATE_PAGINATION);
 		this.#createSelector   = getStylePropertyBool(this.#root, CP_CREATE_SELECTOR);
 
-		const ul = this.#root.querySelector('.' + CLS_SLIDES) as HTMLElement;
+		const viewOffset: number = getStylePropertyFloat(this.#root, CP_VIEW_OFFSET, 100);
 
+		// ----
+
+		const ul   = this.#root.querySelector('.' + CLS_SLIDES) as HTMLElement;
 		this.#lis  = Array.from(ul.getElementsByTagName('li'));
 		this.#size = this.#lis.length;
 
@@ -115,8 +128,8 @@ export class SliderSimplex {
 		}
 		this.initSlides();
 		detectTouch(this.#root);
-		initializeViewportDetection(this.#root, CLS_VIEW, OFFSET_VIEW);
-		callAfterDocumentReady((): void => this.start());
+		initializeViewportDetection(this.#root, CLS_VIEW, viewOffset);
+		callAfterDocumentReady(async (): Promise<void> => this.start());
 	}
 
 	getController() {
@@ -175,7 +188,7 @@ export class SliderSimplex {
 		}
 	}
 
-	private start(): void {
+	private async start(): Promise<void> {
 		if (1 < this.#size) {
 			const fn = (idx: number, dir: -1 | 0 | 1) => this.transition(idx, dir);
 
@@ -185,11 +198,17 @@ export class SliderSimplex {
 		}
 		this.#indicator = new Indicator(this.#root, this.#size);
 
-		this.transition(0, 0);
-		setTimeout((): void => this.#root.classList.add(CLS_START), 200);
-		console.log(`Slider Simplex (#${this.#root.id}): started`);
-
-		repeatAnimationFrame((_t: number, _dt: number): void => this.step());
+		const rs: boolean[] = await Promise.all(this.#slides.map((s: Slide): any => s.isLoaded()));
+		if (rs.every((result: any): boolean => result === true)) {
+			this.transition(0, 0);
+			setTimeout((): void => {
+				this.#root.classList.add(CLS_START);
+				repeatAnimationFrame((_t: number, _dt: number): void => this.step());
+			}, 200);
+			console.log(`Slider Simplex (#${this.#root.id}): successfully started`);
+		} else {
+			console.log(`Slider Simplex (#${this.#root.id}): failed to load media`);
+		}
 	}
 
 
@@ -210,7 +229,7 @@ export class SliderSimplex {
 		this.#isWaiting = true;
 
 		if (1 < this.#size) {
-			const dt: number = this.#slides[idx].getDuration(this.#timeDur, this.#timeTran, this.#randomizeTiming);
+			const dt: number = this.#slides[idx].getDuration(this.#timeDur, this.#timeTran, this.#randomRate);
 			this.#nextStepTime = window.performance.now() + dt * 1000;
 		}
 	}

@@ -5,13 +5,13 @@
  * @version 2025-03-26
  */
 
+import { waitForAllImages, waitForAllVideos } from "./common";
+
 const CLS_IMAGE = 'image';
 const CLS_VIDEO = 'video';
 
 const CLS_SCROLL = 'scroll';
 const CLS_DUAL   = 'dual';
-
-const RANDOM_RATE = 10;
 
 const DS_KEY_STATE = 'state';
 
@@ -25,11 +25,13 @@ export abstract class Mount {
 		e.insertBefore(this.base, e.firstChild);
 	}
 
+	abstract isLoaded(): Promise<boolean>;
+
 	onStateChanged(state: string, _prev: string): void {
 		this.base.dataset[DS_KEY_STATE] = state;
 	}
 
-	getDuration(timeDur: number, _timeTran: number, _doRandom: boolean): number {
+	getDuration(timeDur: number, _timeTran: number, _randomRate: number): number {
 		return timeDur;
 	}
 
@@ -41,6 +43,8 @@ export abstract class Mount {
 
 export class MountImage extends Mount {
 
+	#isLoaded: Promise<boolean> | null = null;
+
 	constructor(li: HTMLElement) {
 		super(li);
 		this.base.classList.add(CLS_IMAGE);
@@ -49,19 +53,28 @@ export class MountImage extends Mount {
 			this.base.classList.add(CLS_SCROLL);
 		}
 
-		const is = li.querySelectorAll(':scope > img, :scope > a > img');
+		const is: HTMLImageElement[] = Array.from(li.querySelectorAll(':scope > img, :scope > a > img'));
 		if (is.length) {
 			this.base.appendChild(is[0]);
 			if (1 < is.length) {
 				this.base.classList.add(CLS_DUAL);
 				this.base.appendChild(is[1]);
 			}
+			this.#isLoaded = waitForAllImages(is);
 		}
 	}
 
-	getDuration(timeDur: number, _timeTran: number, doRandom: boolean): number {
-		if (doRandom) {
-			const f: number = (1 + 0.01 * RANDOM_RATE * (1 - Math.random() * 2));
+	async isLoaded(): Promise<boolean> {
+		if (this.#isLoaded) {
+			return this.#isLoaded;
+		} else {
+			return false;
+		}
+	}
+
+	getDuration(timeDur: number, _timeTran: number, randomRate: number = 0): number {
+		if (randomRate) {
+			const f: number = (1 + 0.01 * randomRate * (1 - Math.random() * 2));
 			return timeDur * f;
 		}
 		return timeDur;
@@ -75,15 +88,16 @@ export class MountImage extends Mount {
 
 export class MountVideo extends Mount {
 
-	#video!: HTMLVideoElement;
+	#video!  : HTMLVideoElement;
+	#isLoaded: Promise<boolean> | null = null;
 
 	constructor(li: HTMLElement, totalSize: number) {
 		super(li);
 		this.base.classList.add(CLS_VIDEO);
 
-		const vs = li.querySelectorAll(':scope > video, :scope > a > video');
+		const vs: HTMLVideoElement[] = Array.from(li.querySelectorAll(':scope > video, :scope > a > video'));
 		if (1 === vs.length) {
-			const v = vs[0] as HTMLVideoElement;
+			const v: HTMLVideoElement = vs[0];
 			v.muted       = true;
 			v.playsInline = true;
 			v.setAttribute('muted', 'true');
@@ -93,6 +107,15 @@ export class MountVideo extends Mount {
 			}
 			this.#video = v;
 			this.base.appendChild(v);
+			this.#isLoaded = waitForAllVideos([v]);
+		}
+	}
+
+	async isLoaded(): Promise<boolean> {
+		if (this.#isLoaded) {
+			return this.#isLoaded;
+		} else {
+			return false;
 		}
 	}
 
@@ -113,7 +136,7 @@ export class MountVideo extends Mount {
 		}
 	}
 
-	getDuration(_timeDur: number, timeTran: number, _doRandom: boolean): number {
+	getDuration(_timeDur: number, timeTran: number, _randomRate: number): number {
 		return this.#video.duration - timeTran * 2;
 	}
 
