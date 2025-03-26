@@ -2,7 +2,7 @@
  * Styles for Sample
  *
  * @author Takuto Yanagida
- * @version 2025-03-25
+ * @version 2025-03-26
  */
 
 
@@ -101,7 +101,7 @@ pre {
 		border    : 2rem solid transparent;
 		transition: border-width 1s;
 
-		&:is(.in, .display) {
+		&:is([data-state='in'], [data-state='display']) {
 			border-width: 0;
 		}
 	}
