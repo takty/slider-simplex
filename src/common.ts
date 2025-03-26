@@ -2,18 +2,8 @@
  * Common Functions
  *
  * @author Takuto Yanagida
- * @version 2025-03-22
+ * @version 2025-03-25
  */
-
-export function repeatUntil(timeout: number, fn: () => boolean): void {
-	const f: () => void = (): void => {
-		const finish: boolean = fn();
-		if (!finish) {
-			setTimeout(f, timeout);
-		}
-	}
-	setTimeout(f, timeout);
-}
 
 export function detectTouch(elm: HTMLElement): void {
 	if (0 < navigator.maxTouchPoints) {

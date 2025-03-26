@@ -2,7 +2,7 @@
  * Caption
  *
  * @author Takuto Yanagida
- * @version 2025-03-18
+ * @version 2025-03-26
  */
 
 const CLS_CAPTION = 'caption';
@@ -11,6 +11,8 @@ const CLS_SUBTITLE = 'subtitle';
 const CLS_CIRCLE   = 'circle';
 const CLS_LINE     = 'line';
 const CLS_CUSTOM   = 'custom';
+
+const DS_KEY_STATE = 'state';
 
 export class Caption {
 
@@ -88,12 +90,8 @@ export class Caption {
 		e.appendChild(span);
 	}
 
-	setState(state: string, flag: boolean): void {
-		if (flag) {
-			this.#base.classList.add(state);
-		} else {
-			this.#base.classList.remove(state);
-		}
+	onStateChanged(state: string, _prev: string): void {
+		this.#base.dataset[DS_KEY_STATE] = state;
 	}
 
 	onResize(): void {

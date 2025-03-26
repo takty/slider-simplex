@@ -2,11 +2,11 @@
  * Slider Simplex
  *
  * @author Takuto Yanagida
- * @version 2025-03-25
+ * @version 2025-03-26
  */
 
 import { getStylePropertyBool, getStylePropertyFloat, getStylePropertyString } from './custom-property';
-import { repeatUntil, detectTouch, repeatAnimationFrame, initializeViewportDetection, callAfterDocumentReady, wrapAround } from './common';
+import { detectTouch, repeatAnimationFrame, initializeViewportDetection, callAfterDocumentReady, wrapAround } from './common';
 
 import { Background } from './part-background.js';
 import { Navigation } from './part-navigation';
@@ -113,10 +113,7 @@ export class SliderSimplex {
 		if (this.#showSideSlide) {
 			ul.style.overflow = 'visible';
 		}
-		const hasVideo: boolean = this.initSlides();
-		// if (hasVideo) {
-		// 	repeatUntil(100, (): boolean => this.onResizeSlide());
-		// }
+		this.initSlides();
 		detectTouch(this.#root);
 		initializeViewportDetection(this.#root, CLS_VIEW, OFFSET_VIEW);
 		callAfterDocumentReady((): void => this.start());
@@ -137,7 +134,7 @@ export class SliderSimplex {
 	// -------------------------------------------------------------------------
 
 
-	private initSlides(): boolean {
+	private initSlides(): void {
 		if (this.#effectType === 'scroll' && 1 < this.#size && this.#size < 5) {
 			this.cloneLis();
 			if (this.#size === 2) {
@@ -145,20 +142,20 @@ export class SliderSimplex {
 			}
 		}
 		const isScroll: boolean = this.#root.classList.contains(CLS_SCROLL);
-		let hasVideo: boolean = false;
 
 		for (let i: number = 0; i < this.#lis.length; i += 1) {
 			const li: HTMLElement = this.#lis[i];
 			if (isScroll) {
 				li.classList.add(CLS_SCROLL);
 			}
-			const slide = new Slide(li, i % this.#size);
-			if ('video' === slide.getType()) {
-				hasVideo = true;
-			}
+			const slide = new Slide(li, i % this.#size, this.#size);
 			this.#slides.push(slide);
 		}
-		const ro = new ResizeObserver((): boolean => this.onResizeSlide());
+		const ro = new ResizeObserver((): void => {
+			for (const s of this.#slides) {
+				s.onResize();
+			}
+		});
 		ro.observe(this.#root);
 
 		switch (this.#effectType) {
@@ -167,7 +164,6 @@ export class SliderSimplex {
 			case 'slide' : this.#effect = new TransitionSlide(this.#slides, this.#timeTran); break;
 			case 'scroll': this.#effect = new TransitionScroll(this.#slides, this.#timeTran); break;
 		}
-		return hasVideo;
 	}
 
 	private cloneLis(): void {
@@ -177,14 +173,6 @@ export class SliderSimplex {
 			this.#lis.push(nls);
 			li.parentNode?.appendChild(nls);
 		}
-	}
-
-	private onResizeSlide(): boolean {
-		let finish: boolean = true;
-		for (const s of this.#slides) {
-			if (!s.onResize()) finish = false;
-		}
-		return finish;
 	}
 
 	private start(): void {
@@ -212,9 +200,6 @@ export class SliderSimplex {
 		if (idx === -1) {
 			idx = wrapAround(this.#curIdx + dir, this.#size);
 		}
-		for (let i: number = 0; i < this.#slides.length; i += 1) {
-			this.#slides[i].transition((i % this.#size) === idx, this.#size);
-		}
 		if (this.#background) this.#background.transition(idx);
 		if (this.#pagination) this.#pagination.transition(idx);
 		if (this.#indicator)  this.#indicator.transition(idx);
@@ -224,12 +209,9 @@ export class SliderSimplex {
 		this.#curIdx    = idx;
 		this.#isWaiting = true;
 
-		for (let i: number = 0; i < this.#slides.length; i += 1) {
-			this.#slides[i].display((i % this.#size) === idx);
-		}
 		if (1 < this.#size) {
 			const dt: number = this.#slides[idx].getDuration(this.#timeDur, this.#timeTran, this.#randomizeTiming);
-			this.#nextStepTime = window.performance.now() + (this.#timeTran + dt) * 1000;
+			this.#nextStepTime = window.performance.now() + dt * 1000;
 		}
 	}
 

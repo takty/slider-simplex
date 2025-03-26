@@ -2,7 +2,7 @@
  * Slider Simplex
  *
  * @author Takuto Yanagida
- * @version 2025-03-21
+ * @version 2025-03-26
  */
 
 .slider-simplex {
@@ -159,32 +159,23 @@
 
 
 	.slides > li[data-effect-type='fade']:first-child {
-		// opacity: 1;
+		opacity: 1;
 	}
+
 	&.start {
 		.slides > li[data-effect-type='fade'] {
-			// transition    : opacity var(--transition-time, 1s);
-			// pointer-events: none;
+			pointer-events: none;
 		}
-		.slides > li[data-effect-type='fade'].pre-display {
-			// opacity       : 1;
-			// pointer-events: auto;
+		.slides > li[data-effect-type='fade'][data-state='display'] {
+			pointer-events: auto;
 		}
 	}
 
 	// ----
 
-	.slides > li[data-effect-type='slide']:not(:first-child) {
-		// transform: translateX(100%);
-	}
 	&.start {
 		.slides > li[data-effect-type='slide'] {
-			opacity   : 1;
-			// transition: transform var(--transition-time, 1s);
-			// transform : translateX(100%);
-		}
-		.slides > li[data-effect-type='slide']:is(.pre-display, :has(~ .pre-display)) {
-			// transform: translateX(0%);
+			opacity: 1;
 		}
 	}
 
@@ -211,7 +202,7 @@
 		&:not(.scroll) {
 			transition: transform 5s;
 
-			&.display {
+			&:is([data-state='display'], [data-state='out']) {
 				transition: transform 10s;
 				transform : scale(var(--slide-zoom));
 			}
@@ -237,7 +228,7 @@
 					object-position: center top;
 				}
 			}
-			&.display > img:first-child {
+			&:is([data-state='display'], [data-state='out']) > img:first-child {
 				object-position: center bottom;
 			}
 		}
@@ -254,14 +245,15 @@
 					transition: opacity 1s;
 				}
 			}
-			&.display > img:last-child {
+			&:is([data-state='display'], [data-state='out']) > img:last-child {
 				opacity: 1;
 			}
 			&.scroll {
 				> img:last-child {
 					object-position: center bottom;
+					transition: opacity 1s, object-position 10s;
 				}
-				&.display > img:last-child {
+				&:is([data-state='display'], [data-state='out']) > img:last-child {
 					transition     : opacity 1s, object-position 9s 1s;
 					object-position: center top;
 				}
@@ -285,16 +277,6 @@
 			max-height: initial;
 			object-fit: cover;
 		}
-		// .width {
-		// 	width    : 100%;
-		// 	top      : 50%;
-		// 	transform: translateY(-50%);
-		// }
-		// .height {
-		// 	height   : 100%;
-		// 	left     : 50%;
-		// 	transform: translateX(-50%);
-		// }
 	}
 }
 
@@ -318,7 +300,7 @@
 		transition-property: opacity;
 
 		opacity: 0;
-		&.display {
+		&[data-state='display'] {
 			opacity: 1;
 		}
 

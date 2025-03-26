@@ -2,16 +2,15 @@
  * Transition
  *
  * @author Takuto Yanagida
- * @version 2025-03-25
+ * @version 2025-03-26
  */
 
 import { repeatAnimationFrame, wrapAround } from './common';
 import { Slide } from './slide';
 
-const CLS_PRE_DISPLAY = 'pre-display';
-const CLS_DISPLAY     = 'display';
-const CLS_IN          = 'in';
-const CLS_OUT         = 'out';
+const S_DISPLAY = 'display';
+const S_IN      = 'in';
+const S_OUT     = 'out';
 
 export abstract class Transition {
 
@@ -59,8 +58,7 @@ export class TransitionFade extends Transition {
 
 	private update(): void {
 		for (const it of this.#its) {
-			it.s.getBase().style.opacity       = `${it.v.toFixed(4)}`;
-			it.s.getBase().style.pointerEvents = (it.v === 1) ? 'auto' : 'none';
+			it.s.getBase().style.opacity = `${it.v.toFixed(4)}`;
 		}
 	}
 
@@ -91,20 +89,21 @@ export class TransitionFade extends Transition {
 			const isCur: boolean = it.s.getIndex() === this.#current;
 			if (isCur) {
 				it.v = Math.min(1, it.v + r);
-				it.s.setState(CLS_IN, 0 < it.v && it.v < 1);
 			} else {
 				it.v = Math.max(0, it.v - r);
-				it.s.setState(CLS_OUT, 0 < it.v && it.v < 1);
 			}
 			if (it.v < 0.01) it.v = 0;
 			if (0.99 < it.v) it.v = 1;
-
-			it.s.setState(CLS_IN, isCur && 0 < it.v && it.v < 1);
-			it.s.setState(CLS_OUT, !isCur && 0 < it.v && it.v < 1);
-			it.s.setState(CLS_PRE_DISPLAY, 0 < it.v && it.v < 1);
-			it.s.setState(CLS_DISPLAY, it.v === 1);
+			it.s.setState(this.getState(isCur, it.v));
 		}
 		this.update();
+	}
+
+	private getState(isCur: boolean, v: number): string {
+		if (isCur && 0 < v && v < 1) return S_IN;
+		if (!isCur && 0 < v && v < 1) return S_OUT;
+		if (v === 1) return S_DISPLAY;
+		return '';
 	}
 
 }
@@ -192,12 +191,16 @@ export class TransitionSlide extends Transition {
 				isTransitioning = true;
 			}
 			const isCur: boolean = it.s.getIndex() === this.#current;
-			it.s.setState(CLS_IN, isCur && isTransitioning);
-			it.s.setState(CLS_OUT, !isCur && isTransitioning);
-			it.s.setState(CLS_PRE_DISPLAY, isTransitioning);
-			it.s.setState(CLS_DISPLAY, isCur && !isTransitioning && it.v === 0);
+			it.s.setState(this.getState(isCur, it.v, isTransitioning));
 		}
 		this.update();
+	}
+
+	private getState(isCur: boolean, v: number, isTransitioning: boolean): string {
+		if (isCur && isTransitioning) return S_IN;
+		if (!isCur && isTransitioning) return S_OUT;
+		if (isCur && !isTransitioning && v === 0) return S_DISPLAY;
+		return '';
 	}
 
 }
@@ -337,12 +340,16 @@ export class TransitionScroll extends Transition {
 			if (e < 0.01) e = 0;
 			if (0.99 < e) e = 1;
 			const isCur: boolean = it.s.getIndex() === this.#current;
-			it.s.setState(CLS_IN, isCur && 0 < e && e < 1);
-			it.s.setState(CLS_OUT, !isCur && 0 < e && e < 1);
-			it.s.setState(CLS_PRE_DISPLAY, 0 < e && e < 1);
-			it.s.setState(CLS_DISPLAY, e === 1);
+			it.s.setState(this.getState(isCur, e));
 		}
 		this.update();
+	}
+
+	private getState(isCur: boolean, e: number): string {
+		if (isCur && 0 < e && e < 1) return S_IN;
+		if (!isCur && 0 < e && e < 1) return S_OUT;
+		if (isCur && e === 1) return S_DISPLAY;
+		return '';
 	}
 
 }
