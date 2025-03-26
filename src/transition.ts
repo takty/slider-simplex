@@ -2,7 +2,7 @@
  * Transition
  *
  * @author Takuto Yanagida
- * @version 2025-03-26
+ * @version 2025-03-27
  */
 
 import { repeatAnimationFrame, wrapAround } from './common';
@@ -256,27 +256,32 @@ export class TransitionScroll extends Transition {
 		if (0 <= dir) {
 			for (let i: number = 0; i < this.#its.length; i += 1) {
 				const it = this.#its.at(wrapAround(i + off, this.#its.length)) as Item;
-				if (it.s.getIndex() === idx) {
-					if ((dir === 0 || 0 < it.v) && Math.abs(it.v) < minDx) {
-						minDx = Math.abs(it.v);
-						tar   = it;
-					}
+				if (it.s.getIndex() === idx && (dir === 0 || 0 < it.v) && Math.abs(it.v) < minDx) {
+					minDx = Math.abs(it.v);
+					tar   = it;
 				}
 			}
 		} else if (dir < 0) {
 			for (let i: number = this.#its.length - 1; 0 <= i; i -= 1) {
 				const it = this.#its.at(wrapAround(i + off, this.#its.length)) as Item;
-				if (it.s.getIndex() === idx) {
-					if (it.v < 0 && Math.abs(it.v) < minDx) {
-						minDx = Math.abs(it.v);
-						tar   = it;
-					}
+				if (it.s.getIndex() === idx && it.v < 0 && Math.abs(it.v) < minDx) {
+					minDx = Math.abs(it.v);
+					tar   = it;
+				}
+			}
+		}
+		if (!tar) {
+			for (let i: number = 0; i < this.#its.length; i += 1) {
+				const it = this.#its.at(wrapAround(i + off, this.#its.length)) as Item;
+				if (it.s.getIndex() === idx && Math.abs(it.v) < minDx) {
+					minDx = Math.abs(it.v);
+					tar   = it;
 				}
 			}
 		}
 		if (tar) {
 			this.#shift = tar.v;
-			this.#speed = Math.max(1, Math.abs(this.#shift));
+			this.#speed = Math.pow(Math.max(1, Math.abs(this.#shift)), 2);
 		}
 	}
 
