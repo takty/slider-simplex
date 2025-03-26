@@ -2,12 +2,11 @@
  * Navigation Buttons
  *
  * @author Takuto Yanagida
- * @version 2025-03-25
+ * @version 2025-03-26
  */
 
 const CLS_NAVIGATION = 'navigation';
 const CLS_ACTIVE     = 'active';
-// const CLS_DISABLED   = 'disabled';
 
 const DX_FLICK: number = 32;
 
@@ -65,11 +64,7 @@ export class Navigation {
 	}
 
 	private doClick(dir: number): void {
-		// this.#bs[0].classList.add(CLS_DISABLED);
-		// this.#bs[1].classList.add(CLS_DISABLED);
 		this.#fs[dir]();
-		// this.#bs[0].classList.remove(CLS_DISABLED);
-		// this.#bs[1].classList.remove(CLS_DISABLED);
 	}
 
 	private setActive(flag: boolean): void {
