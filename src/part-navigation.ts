@@ -2,7 +2,7 @@
  * Navigation Buttons
  *
  * @author Takuto Yanagida
- * @version 2025-03-26
+ * @version 2025-03-28
  */
 
 const CLS_NAVIGATION = 'navigation';
@@ -13,8 +13,6 @@ const DX_FLICK: number = 32;
 type Fn = (idx: number, dir: -1 | 0 | 1) => void;
 
 export class Navigation {
-
-	#base!: HTMLElement;
 
 	#fs!: (() => void)[];
 	#bs!: HTMLElement[];
@@ -29,31 +27,25 @@ export class Navigation {
 		if (!base) {
 			return;
 		}
-		this.#base = base;
-
 		this.#fs = [
 			(): void => fn(-1, -1),
 			(): void => fn(-1,  1),
 		];
-		this.#bs = this.createButtons();
+		this.#bs = this.createButtons(base);
 
-		if (base) {
-			base.addEventListener('mouseenter', (): void => this.setActive(!root.classList.contains('touch')));
-			base.addEventListener('mouseleave', (): void => this.setActive(false));
+		base.addEventListener('mouseenter', (): void => this.setActive(!root.classList.contains('touch')));
+		base.addEventListener('mouseleave', (): void => this.setActive(false));
 
-			if (window.ontouchstart === null) {
-				this.initializeFlick(timeTran * 1000 / 2);
-			}
-		}
+		this.initializeFlick(root, timeTran * 1000 / 2);
 	}
 
-	private createButtons(): HTMLElement[] {
-		let bs: HTMLElement[] = this.#base.querySelectorAll(':scope > button') as any as HTMLElement[];
+	private createButtons(base: HTMLElement): HTMLElement[] {
+		let bs: HTMLElement[] = base.querySelectorAll(':scope > button') as any as HTMLElement[];
 		if (bs.length !== 2) {
 			const b0: HTMLElement = document.createElement('button');
 			const b1: HTMLElement = document.createElement('button');
-			this.#base.appendChild(b0);
-			this.#base.appendChild(b1);
+			base.appendChild(b0);
+			base.appendChild(b1);
 			bs = [b0, b1];
 		}
 		for (let i: number = 0; i < 2; i += 1) {
@@ -72,14 +64,14 @@ export class Navigation {
 		this.#bs[1].classList[flag ? 'add' : 'remove'](CLS_ACTIVE);
 	}
 
-	private initializeFlick(delay: number): void {
+	private initializeFlick(base: HTMLElement, delay: number): void {
 		const sts: number[] = [0, 0];
 		let px: number = Number.NaN;
 
-		this.#base.addEventListener('touchstart', (e: TouchEvent): void => {
+		base.addEventListener('touchstart', (e: TouchEvent): void => {
 			px = e.touches[0].pageX;
 		});
-		this.#base.addEventListener('touchmove', (e: TouchEvent): void => {
+		base.addEventListener('touchmove', (e: TouchEvent): void => {
 			const dir: number = this.getFlickDir(px, e);
 			if (dir !== -1) {
 				if (true === e.cancelable) {
@@ -94,7 +86,7 @@ export class Navigation {
 				px = Number.NaN;
 			}
 		});
-		this.#base.addEventListener('touchend', (): void => {
+		base.addEventListener('touchend', (): void => {
 			px = Number.NaN;
 		});
 	}
@@ -107,4 +99,5 @@ export class Navigation {
 		if (x < px - DX_FLICK) return 1;  // <-
 		return -1;
 	}
+
 }

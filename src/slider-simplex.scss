@@ -166,7 +166,7 @@
 		.slides > li[data-effect-type='fade'] {
 			pointer-events: none;
 		}
-		.slides > li[data-effect-type='fade'][data-state='display'] {
+		.slides > li[data-effect-type='fade']:is([data-state='in'], [data-state='display']) {
 			pointer-events: auto;
 		}
 	}

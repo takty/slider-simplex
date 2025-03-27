@@ -2,7 +2,7 @@
  * Common Functions
  *
  * @author Takuto Yanagida
- * @version 2025-03-26
+ * @version 2025-03-27
  */
 
 export function wrapAround(n: number, size: number): number {
@@ -18,7 +18,7 @@ export function detectTouch(elm: HTMLElement): void {
 		elm.addEventListener('pointerenter', (e: PointerEvent): void => {
 			const isTouch: boolean = (e.pointerType !== 'mouse');
 			elm.classList[isTouch ? 'add' : 'remove']('touch');
-		}, { once: true });
+		});
 	}
 }
 
