@@ -2,7 +2,7 @@
  * Slider Simplex
  *
  * @author Takuto Yanagida
- * @version 2025-03-26
+ * @version 2025-03-28
  */
 
 .slider-simplex {
@@ -119,17 +119,19 @@
 
 
 	.slides {
+		list-style: none;
+
 		position: absolute;
 		inset   : 0;
-
-		list-style: none;
-		overflow  : hidden;
-
-		width : 100%;
-		height: 100%;
+		width   : 100%;
+		height  : 100%;
 
 		display : grid;
-		transition: transform linear 1s;
+		overflow: hidden;
+
+		&[data-show-side-slide='true'] {
+			overflow: visible;
+		}
 
 		> li {
 			grid-area: 1/1/-1/-1;
@@ -165,6 +167,7 @@
 	&.start {
 		.slides > li[data-effect-type='fade'] {
 			pointer-events: none;
+			opacity       : var(--v, 0);
 		}
 		.slides > li[data-effect-type='fade']:is([data-state='in'], [data-state='display']) {
 			pointer-events: auto;
@@ -175,7 +178,8 @@
 
 	&.start {
 		.slides > li[data-effect-type='slide'] {
-			opacity: 1;
+			opacity  : 1;
+			transform: translateX(var(--m, 0));
 		}
 	}
 
@@ -183,7 +187,8 @@
 
 	&.start {
 		.slides > li[data-effect-type='scroll'] {
-			opacity: 1;
+			opacity  : 1;
+			transform: translateX(var(--m, 0));
 		}
 	}
 

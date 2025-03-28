@@ -2,7 +2,7 @@
  * Slider Simplex
  *
  * @author Takuto Yanagida
- * @version 2025-03-26
+ * @version 2025-03-28
  */
 
 import { getStylePropertyBool, getStylePropertyFloat, getStylePropertyString } from './custom-property';
@@ -124,7 +124,7 @@ export class SliderSimplex {
 			this.#background = new Background(this.#root, this.#lis);
 		}
 		if (this.#showSideSlide) {
-			ul.style.overflow = 'visible';
+			ul.dataset.showSideSlide = 'true';
 		}
 		this.initSlides();
 		detectTouch(this.#root);

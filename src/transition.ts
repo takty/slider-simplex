@@ -2,7 +2,7 @@
  * Transition
  *
  * @author Takuto Yanagida
- * @version 2025-03-27
+ * @version 2025-03-28
  */
 
 import { repeatAnimationFrame, wrapAround } from './common';
@@ -11,6 +11,9 @@ import { Slide } from './slide';
 const S_DISPLAY = 'display';
 const S_IN      = 'in';
 const S_OUT     = 'out';
+
+const CP_MOTION     = '--m';
+const CP_VISIBILITY = '--v';
 
 export abstract class Transition {
 
@@ -22,6 +25,7 @@ export abstract class Transition {
 
 type Item = {
 	s: Slide,
+	m: number,
 	v: number,
 };
 
@@ -50,6 +54,7 @@ export class TransitionFade extends Transition {
 		for (let i: number = 0; i < ss.length; i += 1) {
 			its.push({
 				s: ss[i],
+				m: 0,
 				v: i === 0 ? 1 : 0,
 			});
 		}
@@ -58,7 +63,7 @@ export class TransitionFade extends Transition {
 
 	private update(): void {
 		for (const it of this.#its) {
-			it.s.getBase().style.opacity = `${it.v.toFixed(4)}`;
+			it.s.getBase().style.setProperty(CP_VISIBILITY, `${(it.v * 100).toFixed(2)}%`);
 		}
 	}
 
@@ -133,7 +138,8 @@ export class TransitionSlide extends Transition {
 		for (let i: number = 0; i < ss.length; i += 1) {
 			its.push({
 				s: ss[i],
-				v: i === 0 ? 0 : 1,
+				m: i === 0 ? 0 : 1,
+				v: 0,
 			});
 		}
 		return its;
@@ -141,7 +147,8 @@ export class TransitionSlide extends Transition {
 
 	private update(): void {
 		for (const it of this.#its) {
-			it.s.getBase().style.transform = `translateX(${(it.v * 100).toFixed(2)}%)`;
+			it.s.getBase().style.setProperty(CP_MOTION,     `${(it.m * 100).toFixed(2)}%`);
+			it.s.getBase().style.setProperty(CP_VISIBILITY, `${(it.v * 100).toFixed(2)}%`);
 		}
 	}
 
@@ -156,9 +163,9 @@ export class TransitionSlide extends Transition {
 		}
 		for (const it of this.#its) {
 			if (it.s.getIndex() <= this.#current) {
-				if (0 < it.v) return true;
+				if (0 < it.m) return true;
 			} else {
-				if (it.v < 1) return true;
+				if (it.m < 1) return true;
 			}
 		}
 		return false;
@@ -170,28 +177,37 @@ export class TransitionSlide extends Transition {
 		const r: number = dt / (tranTime * 1000);
 		for (const it of this.#its) {
 			let l: number = r;
-			if (this.#current === it.s.getIndex() && Math.abs(it.v) < 0.1) {
-				l = r * Math.sin(Math.abs(it.v) * 10 * (Math.PI / 2));
+			if (this.#current === it.s.getIndex() && Math.abs(it.m) < 0.1) {
+				l = r * Math.sin(Math.abs(it.m) * 10 * (Math.PI / 2));
 			}
-			if (this.#current !== it.s.getIndex() && Math.abs(it.v) > 0.9) {
-				l = r * Math.sin(Math.abs(1 - it.v) * 10 * (Math.PI / 2));
+			if (this.#current !== it.s.getIndex() && Math.abs(it.m) > 0.9) {
+				l = r * Math.sin(Math.abs(1 - it.m) * 10 * (Math.PI / 2));
 			}
 			if (it.s.getIndex() <= this.#current) {
-				it.v = Math.max(0, it.v - l);
+				it.m = Math.max(0, it.m - l);
 			} else {
-				it.v = Math.min(1, it.v + l);
+				it.m = Math.min(1, it.m + l);
 			}
-			if (it.v < 0.01) it.v = 0;
-			if (0.99 < it.v) it.v = 1;
+			if (it.m < 0.01) it.m = 0;
+			if (0.99 < it.m) it.m = 1;
 		}
 		let isTransitioning: boolean = false;
+		let maxArea: number = 0;
 		for (let i: number = this.#its.length - 1; 0 <= i; i -= 1) {
 			const it: Item = this.#its[i];
-			if (0 < it.v && it.v < 1) {
+			if (0 < it.m && it.m < 1) {
 				isTransitioning = true;
 			}
 			const isCur: boolean = it.s.getIndex() === this.#current;
-			it.s.setState(this.getState(isCur, it.v, isTransitioning));
+			it.s.setState(this.getState(isCur, it.m, isTransitioning));
+
+			const a: number = 1 - it.m;
+			if (maxArea < a) {
+				it.v    = a - maxArea;
+				maxArea = a;
+			} else {
+				it.v = 0;
+			}
 		}
 		this.update();
 	}
@@ -234,7 +250,8 @@ export class TransitionScroll extends Transition {
 		for (let i: number = 0; i < ss.length; i += 1) {
 			its.push({
 				s: ss.at(i - off) as Slide,
-				v: i - off,
+				m: i - off,
+				v: 0,
 			});
 		}
 		return its;
@@ -242,7 +259,8 @@ export class TransitionScroll extends Transition {
 
 	private update(): void {
 		for (const it of this.#its) {
-			it.s.getBase().style.transform = `translateX(${it.v * 100}%)`;
+			it.s.getBase().style.setProperty(CP_MOTION,     `${(it.m * 100).toFixed(2)}%`);
+			it.s.getBase().style.setProperty(CP_VISIBILITY, `${(it.v * 100).toFixed(2)}%`);
 		}
 	}
 
@@ -256,16 +274,16 @@ export class TransitionScroll extends Transition {
 		if (0 <= dir) {
 			for (let i: number = 0; i < this.#its.length; i += 1) {
 				const it = this.#its.at(wrapAround(i + off, this.#its.length)) as Item;
-				if (it.s.getIndex() === idx && (dir === 0 || 0 < it.v) && Math.abs(it.v) < minDx) {
-					minDx = Math.abs(it.v);
+				if (it.s.getIndex() === idx && (dir === 0 || 0 < it.m) && Math.abs(it.m) < minDx) {
+					minDx = Math.abs(it.m);
 					tar   = it;
 				}
 			}
 		} else if (dir < 0) {
 			for (let i: number = this.#its.length - 1; 0 <= i; i -= 1) {
 				const it = this.#its.at(wrapAround(i + off, this.#its.length)) as Item;
-				if (it.s.getIndex() === idx && it.v < 0 && Math.abs(it.v) < minDx) {
-					minDx = Math.abs(it.v);
+				if (it.s.getIndex() === idx && it.m < 0 && Math.abs(it.m) < minDx) {
+					minDx = Math.abs(it.m);
 					tar   = it;
 				}
 			}
@@ -273,14 +291,14 @@ export class TransitionScroll extends Transition {
 		if (!tar) {
 			for (let i: number = 0; i < this.#its.length; i += 1) {
 				const it = this.#its.at(wrapAround(i + off, this.#its.length)) as Item;
-				if (it.s.getIndex() === idx && Math.abs(it.v) < minDx) {
-					minDx = Math.abs(it.v);
+				if (it.s.getIndex() === idx && Math.abs(it.m) < minDx) {
+					minDx = Math.abs(it.m);
 					tar   = it;
 				}
 			}
 		}
 		if (tar) {
-			this.#shift = tar.v;
+			this.#shift = tar.m;
 			this.#speed = Math.pow(Math.max(1, Math.abs(this.#shift)), 2);
 		}
 	}
@@ -295,8 +313,8 @@ export class TransitionScroll extends Transition {
 
 		for (let i: number = 0; i < this.#its.length; i += 1) {
 			const it = this.#its.at(i) as Item;
-			if (Math.abs(it.v) < minDx) {
-				minDx = Math.abs(it.v);
+			if (Math.abs(it.m) < minDx) {
+				minDx = Math.abs(it.m);
 				cur   = i;
 			}
 		}
@@ -313,29 +331,29 @@ export class TransitionScroll extends Transition {
 			r = Math.min(r, -this.#shift);
 			this.#shift += r;
 			for (const it of this.#its) {
-				it.v += r;
+				it.m += r;
 			}
-			if (this.#sideSize + 0.5 < (this.#its.at(-1) as Item).v) {
+			if (this.#sideSize + 0.5 < (this.#its.at(-1) as Item).m) {
 				const it = this.#its.pop() as Item;
-				it.v = (this.#its.at(0) as Item).v - 1;
+				it.m = (this.#its.at(0) as Item).m - 1;
 				this.#its.unshift(it);
 			}
 		} else if (0 < this.#shift) {
 			r = Math.min(r, this.#shift);
 			this.#shift -= r;
 			for (const it of this.#its) {
-				it.v -= r;
+				it.m -= r;
 			}
-			if ((this.#its.at(0) as Item).v < -(this.#sideSize + 0.5)) {
+			if ((this.#its.at(0) as Item).m < -(this.#sideSize + 0.5)) {
 				const it = this.#its.shift() as Item;
-				it.v = (this.#its.at(-1) as Item).v + 1;
+				it.m = (this.#its.at(-1) as Item).m + 1;
 				this.#its.push(it);
 			}
 		}
 		if (doFit) {
 			this.#shift = 0;
 			for (const it of this.#its) {
-				it.v = Math.round(it.v);
+				it.m = Math.round(it.m);
 			}
 		}
 
@@ -346,6 +364,7 @@ export class TransitionScroll extends Transition {
 			if (0.99 < e) e = 1;
 			const isCur: boolean = it.s.getIndex() === this.#current;
 			it.s.setState(this.getState(isCur, e));
+			it.v = e;
 		}
 		this.update();
 	}
