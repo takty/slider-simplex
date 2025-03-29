@@ -2,10 +2,10 @@
  * Transition
  *
  * @author Takuto Yanagida
- * @version 2025-03-28
+ * @version 2025-03-29
  */
 
-import { repeatAnimationFrame, wrapAround } from './common';
+import { repeatAnimationFrame, wrapAround, snapToBinary } from './common';
 import { Slide } from './slide';
 
 const S_DISPLAY = 'display';
@@ -97,8 +97,7 @@ export class TransitionFade extends Transition {
 			} else {
 				it.v = Math.max(0, it.v - r);
 			}
-			if (it.v < 0.01) it.v = 0;
-			if (0.99 < it.v) it.v = 1;
+			it.v = snapToBinary(it.v);
 			it.s.setState(this.getState(isCur, it.v));
 		}
 		this.update();
@@ -188,8 +187,7 @@ export class TransitionSlide extends Transition {
 			} else {
 				it.m = Math.min(1, it.m + l);
 			}
-			if (it.m < 0.01) it.m = 0;
-			if (0.99 < it.m) it.m = 1;
+			it.m = snapToBinary(it.m);
 		}
 		let isTransitioning: boolean = false;
 		let maxArea: number = 0;
@@ -203,7 +201,7 @@ export class TransitionSlide extends Transition {
 
 			const a: number = 1 - it.m;
 			if (maxArea < a) {
-				it.v    = a - maxArea;
+				it.v    = snapToBinary(a - maxArea);
 				maxArea = a;
 			} else {
 				it.v = 0;
@@ -359,9 +357,7 @@ export class TransitionScroll extends Transition {
 
 		const ul = this.#its[0].s.getBase().parentElement as HTMLElement;
 		for (const it of this.#its) {
-			let e: number = getOverlapRatio(it.s.getBase(), ul);
-			if (e < 0.01) e = 0;
-			if (0.99 < e) e = 1;
+			const e: number = snapToBinary(getOverlapRatio(it.s.getBase(), ul));
 			const isCur: boolean = it.s.getIndex() === this.#current;
 			it.s.setState(this.getState(isCur, e));
 			it.v = e;

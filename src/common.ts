@@ -2,11 +2,17 @@
  * Common Functions
  *
  * @author Takuto Yanagida
- * @version 2025-03-27
+ * @version 2025-03-29
  */
 
 export function wrapAround(n: number, size: number): number {
 	return size <= n ? n - size : (n < 0 ? size + n : n);
+}
+
+export function snapToBinary(n: number, e: number = 0.0001): number {
+	if (n < e)     return 0;
+	if (1 - e < n) return 1;
+	return n;
 }
 
 
