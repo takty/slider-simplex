@@ -2,7 +2,7 @@
  * Mount
  *
  * @author Takuto Yanagida
- * @version 2025-03-26
+ * @version 2025-03-29
  */
 
 import { waitForAllImages, waitForAllVideos } from "./common";
@@ -100,10 +100,8 @@ export class MountVideo extends Mount {
 			const v: HTMLVideoElement = vs[0];
 			v.muted       = true;
 			v.playsInline = true;
-			v.setAttribute('muted', 'true');
-			v.setAttribute('playsinline', 'true');
 			if (totalSize === 1) {
-				v.setAttribute('loop', 'true');
+				v.loop = true;
 			}
 			this.#video = v;
 			this.base.appendChild(v);
@@ -124,7 +122,7 @@ export class MountVideo extends Mount {
 
 		if (prev === '' && (state === 'in' || state === 'display')) {
 			if (this.#video.paused) {
-				this.#video.setAttribute('autoplay', 'true');
+				this.#video.autoplay = true;
 				this.#video.play();
 			}
 		}
