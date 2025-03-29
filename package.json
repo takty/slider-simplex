@@ -34,8 +34,8 @@
 	"devDependencies": {
 		"esbuild": "^0.25.1",
 		"esbuild-sass-plugin": "^3.3.1",
-		"sass": "^1.85.1",
+		"sass": "^1.86.0",
 		"typescript": "^5.8.2",
-		"vite": "^6.2.2"
+		"vite": "^6.2.3"
 	}
 }
