@@ -8,4 +8,5 @@ await build({
 	outExtension: { '.js': '.min.js', '.css': '.min.css' },
 	minify      : true,
 	sourcemap   : true,
+	bundle      : true,
 });
