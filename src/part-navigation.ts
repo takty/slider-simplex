@@ -2,7 +2,7 @@
  * Navigation Buttons
  *
  * @author Takuto Yanagida
- * @version 2025-03-28
+ * @version 2025-04-04
  */
 
 const CLS_NAVIGATION = 'navigation';
@@ -40,7 +40,7 @@ export class Navigation {
 	}
 
 	private createButtons(base: HTMLElement): HTMLElement[] {
-		let bs: HTMLElement[] = base.querySelectorAll(':scope > button') as any as HTMLElement[];
+		let bs: HTMLElement[] = Array.from(base.querySelectorAll(':scope > button')) as HTMLElement[];
 		if (bs.length !== 2) {
 			const b0: HTMLElement = document.createElement('button');
 			const b1: HTMLElement = document.createElement('button');
@@ -48,20 +48,21 @@ export class Navigation {
 			base.appendChild(b1);
 			bs = [b0, b1];
 		}
-		for (let i: number = 0; i < 2; i += 1) {
-			bs[i].classList.add(CLS_NAVIGATION);
-			bs[i].addEventListener('click', (): void => this.doClick(i));
+		for (let i: number = 0; i < bs.length; i += 1) {
+			bs[i]!.classList.add(CLS_NAVIGATION);
+			bs[i]!.addEventListener('click', (): void => this.doClick(i));
 		}
 		return bs;
 	}
 
 	private doClick(dir: number): void {
-		this.#fs[dir]();
+		this.#fs[dir]!();
 	}
 
 	private setActive(flag: boolean): void {
-		this.#bs[0].classList[flag ? 'add' : 'remove'](CLS_ACTIVE);
-		this.#bs[1].classList[flag ? 'add' : 'remove'](CLS_ACTIVE);
+		for (const b of this.#bs) {
+			b.classList[flag ? 'add' : 'remove'](CLS_ACTIVE);
+		}
 	}
 
 	private initializeFlick(base: HTMLElement, delay: number): void {
@@ -69,11 +70,11 @@ export class Navigation {
 		let px: number = Number.NaN;
 
 		base.addEventListener('touchstart', (e: TouchEvent): void => {
-			px = e.touches[0].pageX;
+			px = e.touches[0]!.pageX;
 		});
 		base.addEventListener('touchmove', (e: TouchEvent): void => {
 			const dir: number = this.getFlickDir(px, e);
-			if (dir !== -1) {
+			if (dir !== -1 && this.#fs[dir]) {
 				if (true === e.cancelable) {
 					e.preventDefault();
 				}
@@ -81,7 +82,7 @@ export class Navigation {
 				if (this.#bs[dir]) {
 					clearTimeout(sts[dir]);
 					this.#bs[dir].classList.add(CLS_ACTIVE);
-					sts[dir] = setTimeout((): void => this.#bs[dir].classList.remove(CLS_ACTIVE), delay);
+					sts[dir] = setTimeout((): void => this.#bs[dir]!.classList.remove(CLS_ACTIVE), delay);
 				}
 				px = Number.NaN;
 			}
@@ -93,7 +94,7 @@ export class Navigation {
 
 	private getFlickDir(px: number, e: TouchEvent): number {
 		if (Number.isNaN(px)) return -1;
-		const x: number = e.changedTouches[0].pageX;
+		const x: number = e.changedTouches[0]!.pageX;
 
 		if (px + DX_FLICK < x) return 0;  // ->
 		if (x < px - DX_FLICK) return 1;  // <-

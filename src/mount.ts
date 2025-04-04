@@ -2,7 +2,7 @@
  * Mount
  *
  * @author Takuto Yanagida
- * @version 2025-03-29
+ * @version 2025-04-04
  */
 
 import { waitForAllImages, waitForAllVideos } from "./common";
@@ -53,10 +53,10 @@ export class MountImage extends Mount {
 			this.base.classList.add(CLS_SCROLL);
 		}
 
-		const is: HTMLImageElement[] = Array.from(li.querySelectorAll(':scope > img, :scope > a > img'));
-		if (is.length) {
+		const is: HTMLImageElement[] = Array.from(li.querySelectorAll(':scope > img, :scope > a > img')) as HTMLImageElement[];
+		if (is[0]) {
 			this.base.appendChild(is[0]);
-			if (1 < is.length) {
+			if (is[1]) {
 				this.base.classList.add(CLS_DUAL);
 				this.base.appendChild(is[1]);
 			}
@@ -95,8 +95,8 @@ export class MountVideo extends Mount {
 		super(li);
 		this.base.classList.add(CLS_VIDEO);
 
-		const vs: HTMLVideoElement[] = Array.from(li.querySelectorAll(':scope > video, :scope > a > video'));
-		if (1 === vs.length) {
+		const vs: HTMLVideoElement[] = Array.from(li.querySelectorAll(':scope > video, :scope > a > video')) as HTMLVideoElement[];
+		if (vs[0]) {
 			const v: HTMLVideoElement = vs[0];
 			v.muted       = true;
 			v.playsInline = true;

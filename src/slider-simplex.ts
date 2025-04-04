@@ -2,7 +2,7 @@
  * Slider Simplex
  *
  * @author Takuto Yanagida
- * @version 2025-03-28
+ * @version 2025-04-04
  */
 
 import { getStylePropertyBool, getStylePropertyFloat, getStylePropertyString } from './custom-property';
@@ -157,7 +157,7 @@ export class SliderSimplex {
 		const isScroll: boolean = this.#root.classList.contains(CLS_SCROLL);
 
 		for (let i: number = 0; i < this.#lis.length; i += 1) {
-			const li: HTMLElement = this.#lis[i];
+			const li: HTMLElement = this.#lis[i]!;
 			if (isScroll) {
 				li.classList.add(CLS_SCROLL);
 			}
@@ -181,8 +181,8 @@ export class SliderSimplex {
 
 	private cloneLis(): void {
 		for (let i: number = 0; i < this.#size; i += 1) {
-			const li: HTMLLIElement = this.#lis[i];
-			const nls = this.#lis[i].cloneNode(true) as HTMLLIElement;
+			const li: HTMLLIElement = this.#lis[i]!;
+			const nls = li.cloneNode(true) as HTMLLIElement;
 			this.#lis.push(nls);
 			li.parentNode?.appendChild(nls);
 		}
@@ -229,7 +229,7 @@ export class SliderSimplex {
 		this.#isWaiting = true;
 
 		if (1 < this.#size) {
-			const dt: number = this.#slides[idx].getDuration(this.#timeDur, this.#timeTran, this.#randomRate);
+			const dt: number = this.#slides[idx]!.getDuration(this.#timeDur, this.#timeTran, this.#randomRate);
 			this.#nextStepTime = window.performance.now() + dt * 1000;
 		}
 	}

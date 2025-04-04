@@ -2,7 +2,7 @@
  * Transition
  *
  * @author Takuto Yanagida
- * @version 2025-03-29
+ * @version 2025-04-04
  */
 
 import { repeatAnimationFrame, wrapAround, snapToBinary } from './common';
@@ -53,7 +53,7 @@ export class TransitionFade extends Transition {
 
 		for (let i: number = 0; i < ss.length; i += 1) {
 			its.push({
-				s: ss[i],
+				s: ss[i]!,
 				m: 0,
 				v: i === 0 ? 1 : 0,
 			});
@@ -136,7 +136,7 @@ export class TransitionSlide extends Transition {
 
 		for (let i: number = 0; i < ss.length; i += 1) {
 			its.push({
-				s: ss[i],
+				s: ss[i]!,
 				m: i === 0 ? 0 : 1,
 				v: 0,
 			});
@@ -192,7 +192,7 @@ export class TransitionSlide extends Transition {
 		let isTransitioning: boolean = false;
 		let maxArea: number = 0;
 		for (let i: number = this.#its.length - 1; 0 <= i; i -= 1) {
-			const it: Item = this.#its[i];
+			const it: Item = this.#its[i]!;
 			if (0 < it.m && it.m < 1) {
 				isTransitioning = true;
 			}
@@ -355,7 +355,7 @@ export class TransitionScroll extends Transition {
 			}
 		}
 
-		const ul = this.#its[0].s.getBase().parentElement as HTMLElement;
+		const ul = this.#its[0]!.s.getBase().parentElement as HTMLElement;
 		for (const it of this.#its) {
 			const e: number = snapToBinary(getOverlapRatio(it.s.getBase(), ul));
 			const isCur: boolean = it.s.getIndex() === this.#current;

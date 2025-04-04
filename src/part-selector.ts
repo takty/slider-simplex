@@ -2,7 +2,7 @@
  * Thumbnails
  *
  * @author Takuto Yanagida
- * @version 2025-03-22
+ * @version 2025-04-04
  */
 
 const CLS_SELECTOR = 'selector';
@@ -27,7 +27,7 @@ export class Selector {
 		const e: HTMLElement = this.createElement(base);
 		const dir = size === 2 ? 1 : 0;
 		for (let i: number = 0; i < size; i += 1) {
-			e.appendChild(this.createThumbnail(lis[i], fn, i, dir));
+			e.appendChild(this.createThumbnail(lis[i]!, fn, i, dir));
 		}
 	}
 

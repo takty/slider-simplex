@@ -2,7 +2,7 @@
  * Indicators
  *
  * @author Takuto Yanagida
- * @version 2025-03-13
+ * @version 2025-04-04
  */
 
 const CLS_SLIDE_CNT = 'slide-count';
@@ -13,11 +13,11 @@ export class Indicator {
 	#ies: HTMLElement[] = [];
 
 	constructor(root: HTMLElement, size: number) {
-		const ces = root.querySelectorAll('.' + CLS_SLIDE_CNT) as any as HTMLElement[];
+		const ces = Array.from(root.querySelectorAll('.' + CLS_SLIDE_CNT)) as HTMLElement[];
 		for (const elm of ces) {
 			elm.innerHTML = '' + size;
 		}
-		this.#ies = root.querySelectorAll('.' + CLS_SLIDE_IDX) as any as HTMLElement[];
+		this.#ies = Array.from(root.querySelectorAll('.' + CLS_SLIDE_IDX)) as HTMLElement[];
 		for (const elm of this.#ies) {
 			elm.innerHTML = '' + 1;
 		}
