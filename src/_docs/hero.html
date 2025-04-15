@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.scss">
 <script type="module">
-	import '../slider-simplex.scss';
+	import '../slider-simplex.css';
 	import { SliderSimplex } from '../slider-simplex.ts';
 	SliderSimplex.create('ss0');
 	SliderSimplex.create('ss1');
@@ -27,6 +27,18 @@
 
 		--create-navigation: false;
 		--create-pagination: false;
+
+		--size-height-min: unset;
+		--size-height-max: unset;
+
+		--slide-ratio: unset;
+
+
+		grid-template-rows: auto;
+		.frame {
+			position: absolute;
+			inset: 0;;
+		}
 	}
 	#ss0  { --effect-type: slide; }
 	#ss1  { --effect-type: scroll; }
