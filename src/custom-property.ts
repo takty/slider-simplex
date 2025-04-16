@@ -38,6 +38,29 @@ export function getStylePropertyString(elm: HTMLElement, prop: string, def: stri
 	return v || def;
 }
 
+export function getStylePropertyTime(elm: HTMLElement, prop: string, def: number = 0): number {
+	const v: string = getPropValue(elm, prop);
+	if (!v) return def;
+
+	const vl: string = v.toLowerCase();
+	let s: string = '';
+	let m: number = 1000;
+
+	if (vl.endsWith('ms')) {
+		s = vl.slice(0, -2).trim();
+		m = 1;
+	} else if (vl.endsWith('s')) {
+		s = vl.slice(0, -1).trim();
+		m = 1000;
+	} else {
+		s = vl.trim();
+		m = 1000;
+	}
+	if (!s) return def;
+	const n: number = parseFloat(s);
+	return isNaN(n) ? def : n * m;
+}
+
 function getPropValue(elm: HTMLElement, prop: string): string {
 	let v: string = getComputedStyle(elm).getPropertyValue(prop).trim();
 	if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {

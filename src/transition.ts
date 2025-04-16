@@ -2,7 +2,7 @@
  * Transition
  *
  * @author Takuto Yanagida
- * @version 2025-04-15
+ * @version 2025-04-16
  */
 
 import { repeatAnimationFrame, wrapAround, snapToBinary } from './common';
@@ -35,14 +35,14 @@ type Item = {
 
 export class TransitionFade extends Transition {
 
-	#tranTime       : number;
+	#timeTran       : number;
 	#its            : Item[];
 	#current        : number = 0;
 	#beforeFirstStep: boolean = false;
 
-	constructor(ss: Slide[], tranTime: number) {
+	constructor(ss: Slide[], timeTran: number) {
 		super();
-		this.#tranTime = tranTime;
+		this.#timeTran = timeTran;
 
 		this.#its = ss.map((s, i) => ({
 			s: s,
@@ -75,7 +75,7 @@ export class TransitionFade extends Transition {
 	private step(dt: number): void {
 		this.#beforeFirstStep = false;
 
-		const r: number = dt / (this.#tranTime * 1000);
+		const r: number = dt / this.#timeTran;
 		for (const it of this.#its) {
 			const isCur: boolean = it.s.getIndex() === this.#current;
 			if (isCur) {
@@ -103,14 +103,14 @@ export class TransitionFade extends Transition {
 
 export class TransitionSlide extends Transition {
 
-	#tranTime       : number;
+	#timeTran       : number;
 	#its            : Item[];
 	#current        : number = 0;
 	#beforeFirstStep: boolean = false;
 
-	constructor(ss: Slide[], tranTime: number) {
+	constructor(ss: Slide[], timeTran: number) {
 		super();
-		this.#tranTime = tranTime;
+		this.#timeTran = timeTran;
 
 		this.#its = ss.map((s, i) => ({
 			s: s,
@@ -144,7 +144,7 @@ export class TransitionSlide extends Transition {
 	private step(dt: number): void {
 		this.#beforeFirstStep = false;
 
-		const r: number = dt / (this.#tranTime * 1000);
+		const r: number = dt / this.#timeTran;
 		for (const it of this.#its) {
 			let l: number = r;
 			if (this.#current === it.s.getIndex() && Math.abs(it.m) < 0.1) {
@@ -196,16 +196,16 @@ export class TransitionSlide extends Transition {
 export class TransitionScroll extends Transition {
 
 	#its     : Item[];
-	#tranTime: number;
+	#timeTran: number;
 	#current : number = 0;
 	#shift   : number = 0;
 	#speed   : number = 0;
 
 	#sideSize: number = 2;
 
-	constructor(ss: Slide[], tranTime: number) {
+	constructor(ss: Slide[], timeTran: number) {
 		super();
-		this.#tranTime = tranTime;
+		this.#timeTran = timeTran;
 
 		const off: number = Math.floor(ss.length / 2);
 		this.#its = ss.map((_s, i) => ({
@@ -285,7 +285,7 @@ export class TransitionScroll extends Transition {
 	}
 
 	private step(dt: number): void {
-		let r: number = this.#speed * dt / (this.#tranTime * 1000);
+		let r: number = this.#speed * dt / this.#timeTran;
 		if (Math.abs(this.#shift) < 0.1) {
 			r *= Math.sin(Math.abs(this.#shift) * 10 * (Math.PI / 2)) / this.#speed;
 		}

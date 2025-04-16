@@ -5,7 +5,7 @@
  * @version 2025-04-16
  */
 
-import { getStylePropertyBool, getStylePropertyFloat, getStylePropertyString } from './custom-property';
+import { getStylePropertyBool, getStylePropertyFloat, getStylePropertyString, getStylePropertyTime } from './custom-property';
 import { detectTouch, repeatAnimationFrame, initializeViewportDetection, callAfterDocumentReady, wrapAround } from './common';
 
 import { Background } from './part-background.js';
@@ -91,8 +91,8 @@ export class SliderSimplex {
 		this.#root = root;
 
 		this.#effectType       = getStylePropertyString(this.#root, CP_EFFECT_TYPE, 'fade');
-		this.#timeDur          = getStylePropertyFloat(this.#root, CP_DURATION_TIME, 8);
-		this.#timeTran         = getStylePropertyFloat(this.#root, CP_TRANSITION_TIME, 1);
+		this.#timeDur          = getStylePropertyTime(this.#root, CP_DURATION_TIME, 8000);
+		this.#timeTran         = getStylePropertyTime(this.#root, CP_TRANSITION_TIME, 1000);
 
 		const rt: boolean | null = getStylePropertyBool(this.#root, CP_RANDOMIZE_TIMING, null);
 		this.#randomRate         = rt === false ? 0 : getStylePropertyFloat(root, CP_RANDOM_RATE, rt === true ? 10 : 0);
@@ -230,7 +230,7 @@ export class SliderSimplex {
 
 		if (1 < this.#size) {
 			const dt: number = this.#slides[idx]?.getDuration(this.#timeDur, this.#timeTran, this.#randomRate) ?? this.#timeDur;
-			this.#nextStepTime = window.performance.now() + dt * 1000;
+			this.#nextStepTime = window.performance.now() + dt;
 		}
 	}
 

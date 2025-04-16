@@ -126,7 +126,7 @@ export class MountVideo extends Mount {
 	}
 
 	getDuration(_timeDur: number, timeTran: number, _randomRate: number): number {
-		return this.#video ? (this.#video.duration - timeTran * 2) : 0;
+		return this.#video ? (this.#video.duration * 1000 - timeTran * 2) : 0;
 	}
 
 }

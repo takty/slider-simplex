@@ -36,7 +36,7 @@ export class Navigation {
 		base.addEventListener('mouseenter', (): void => this.setActive(!root.classList.contains(CLS_TOUCH)));
 		base.addEventListener('mouseleave', (): void => this.setActive(false));
 
-		this.initializeFlick(root, timeTran * 1000 / 2);
+		this.initializeFlick(root, timeTran / 2);
 	}
 
 	private createButtons(base: HTMLElement): HTMLButtonElement[] {
