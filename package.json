@@ -33,8 +33,6 @@
 	"packageManager": "yarn@1.22.22",
 	"devDependencies": {
 		"esbuild": "^0.25.2",
-		"esbuild-sass-plugin": "^3.3.1",
-		"sass": "^1.86.3",
 		"typescript": "^5.8.3",
 		"vite": "^6.3.0"
 	}

@@ -1,9 +1,7 @@
 import { build } from 'esbuild';
-import { sassPlugin } from 'esbuild-sass-plugin';
 
 await build({
 	entryPoints : ['src/slider-simplex.ts', 'src/slider-simplex.css'],
-	plugins     : [sassPlugin()],
 	outdir      : 'dist',
 	outExtension: { '.js': '.min.js', '.css': '.min.css' },
 	minify      : true,
