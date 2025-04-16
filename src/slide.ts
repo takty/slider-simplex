@@ -6,7 +6,9 @@
  */
 
 import { Caption } from './caption';
-import { Mount, MountImage, MountVideo } from './mount';
+import { Mount } from './mount';
+import { MountImage } from "./mount-image";
+import { MountVideo } from "./mount-video";
 
 const DS_KEY_STATE = 'state';
 

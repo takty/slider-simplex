@@ -15,7 +15,10 @@ import { Indicator } from './part-indicator';
 import { Selector } from './part-selector.js';
 
 import { Slide } from './slide';
-import { Transition, TransitionFade, TransitionSlide, TransitionScroll } from './transition';
+import { Transition } from './transition';
+import { TransitionScroll } from './transition-scroll';
+import { TransitionSlide } from './transition-slide';
+import { TransitionFade } from './transition-fade';
 
 const NS          = 'slider-simplex';
 const CLS_SLIDES  = 'slides';
