@@ -2,7 +2,7 @@
  * Slide
  *
  * @author Takuto Yanagida
- * @version 2025-03-26
+ * @version 2025-04-16
  */
 
 import { Caption } from './caption';
@@ -12,21 +12,18 @@ const DS_KEY_STATE = 'state';
 
 export class Slide {
 
-	#li : HTMLElement;
-	#idx: number;
-	#mnt: Mount;
-	#cap: Caption | null;
+	readonly #li : HTMLElement;
+	readonly #idx: number;
+	readonly #mnt: Mount;
+	readonly #cap: Caption | null;
 
 	constructor(li: HTMLElement, idx: number, totalSize: number) {
 		this.#li  = li;
 		this.#idx = idx;
 
 		this.#cap = Caption.create(li);
-		if (li.querySelector(':scope > video, :scope > a > video')) {
-			this.#mnt  = new MountVideo(li, totalSize);
-		} else {
-			this.#mnt  = new MountImage(li);
-		}
+		const hasVideo = li.querySelector<HTMLVideoElement>(':scope > video, :scope > a > video');
+		this.#mnt = hasVideo ? new MountVideo(li, totalSize) : new MountImage(li);
 	}
 
 	getBase(): HTMLElement {
@@ -43,13 +40,11 @@ export class Slide {
 
 		this.#li.dataset[DS_KEY_STATE] = state;
 		this.#mnt.onStateChanged(state, prev);
-		if (this.#cap) {
-			this.#cap.onStateChanged(state, prev);
-		}
+		this.#cap?.onStateChanged(state, prev);
 	}
 
 	onResize(): void {
-		if (this.#cap) this.#cap.onResize();
+		this.#cap?.onResize();
 	}
 
 	isLoaded(): Promise<boolean> {

@@ -2,7 +2,7 @@
  * Slider Simplex
  *
  * @author Takuto Yanagida
- * @version 2025-04-04
+ * @version 2025-04-16
  */
 
 import { getStylePropertyBool, getStylePropertyFloat, getStylePropertyString } from './custom-property';
@@ -45,7 +45,7 @@ export class SliderSimplex {
 
 	static create(id: string | null): SliderSimplex | null {
 		if (id) {
-			const r: HTMLElement = document.getElementById(id) as HTMLElement;
+			const r: HTMLElement | null = document.getElementById(id);
 			if (r) {
 				return new SliderSimplex(r);
 			}
@@ -57,22 +57,22 @@ export class SliderSimplex {
 		return null;
 	}
 
-	#root: HTMLElement;
+	readonly #root: HTMLElement;
 
-	#effectType      : string
-	#timeDur         : number
-	#timeTran        : number
-	#randomRate      : number
+	readonly #effectType      : string
+	readonly #timeDur         : number
+	readonly #timeTran        : number
+	readonly #randomRate      : number
 
-	#showBackground  : boolean;
-	#showSideSlide   : boolean;
+	readonly #showBackground  : boolean;
+	readonly #showSideSlide   : boolean;
 
-	#createNavigation: boolean;
-	#createPagination: boolean;
-	#createSelector  : boolean;
+	readonly #createNavigation: boolean;
+	readonly #createPagination: boolean;
+	readonly #createSelector  : boolean;
 
-	#lis    : HTMLLIElement[];
-	#size   : number;
+	#lis    : HTMLLIElement[] = [];
+	#size   : number = 0;
 	#slides : Slide[] = [];
 	#effect!: Transition;
 
@@ -95,13 +95,8 @@ export class SliderSimplex {
 		this.#timeTran         = getStylePropertyFloat(this.#root, CP_TRANSITION_TIME, 1);
 
 		const rt: boolean | null = getStylePropertyBool(this.#root, CP_RANDOMIZE_TIMING, null);
-		if (rt) {
-			this.#randomRate = getStylePropertyFloat(this.#root, CP_RANDOM_RATE, 10);
-		} else if (rt === null) {
-			this.#randomRate = getStylePropertyFloat(this.#root, CP_RANDOM_RATE, 0);
-		} else {
-			this.#randomRate = 0;
-		}
+		this.#randomRate         = rt === false ? 0 : getStylePropertyFloat(root, CP_RANDOM_RATE, rt === true ? 10 : 0);
+
 		this.#showBackground   = getStylePropertyBool(this.#root, CP_SHOW_BACKGROUND, false);
 		this.#showSideSlide    = getStylePropertyBool(this.#root, CP_SHOW_SIDE_SLIDE, false);
 
@@ -113,9 +108,18 @@ export class SliderSimplex {
 
 		// ----
 
-		const ul   = this.#root.querySelector('.' + CLS_SLIDES) as HTMLElement;
+		const ul   = this.#root.querySelector<HTMLElement>('.' + CLS_SLIDES);
+		if (!ul) {
+			console.error(`Slider Simplex (#${this.#root.id}): no slides`);
+			return;
+		}
 		this.#lis  = Array.from(ul.getElementsByTagName('li'));
 		this.#size = this.#lis.length;
+
+		if (this.#size === 0) {
+			console.error(`Slider Simplex (#${this.#root.id}): no list items`);
+			return;
+		}
 
 		for (const li of this.#lis) {
 			li.dataset.effectType = li.dataset.effectType ?? this.#effectType;
@@ -129,18 +133,17 @@ export class SliderSimplex {
 		this.initSlides();
 		detectTouch(this.#root);
 		initializeViewportDetection(this.#root, CLS_VIEW, viewOffset);
-		callAfterDocumentReady(async (): Promise<void> => this.start());
+		callAfterDocumentReady((): Promise<void> => this.start());
 	}
 
 	getController() {
-		const fs = {
+		return {
 			move: (idx: number): void => this.transition(idx, this.#size === 2 ? 1 : 0),
 			next: (): void => this.transition((this.#curIdx === this.#size - 1) ? 0               : (this.#curIdx + 1),  1),
 			prev: (): void => this.transition((this.#curIdx === 0            ) ? (this.#size - 1) : (this.#curIdx - 1), -1),
 
 			onTransitionEnd: (fn: () => void): void => { this.#onTransitionEnd = fn; }
 		};
-		return fs;
 	}
 
 
@@ -156,14 +159,11 @@ export class SliderSimplex {
 		}
 		const isScroll: boolean = this.#root.classList.contains(CLS_SCROLL);
 
-		for (let i: number = 0; i < this.#lis.length; i += 1) {
-			const li: HTMLElement = this.#lis[i]!;
-			if (isScroll) {
-				li.classList.add(CLS_SCROLL);
-			}
-			const slide = new Slide(li, i % this.#size, this.#size);
-			this.#slides.push(slide);
-		}
+		this.#slides = this.#lis.map((li, i) => {
+			if (isScroll) li.classList.add(CLS_SCROLL);
+			return new Slide(li, i % this.#size, this.#size);
+		});
+
 		const ro = new ResizeObserver((): void => {
 			for (const s of this.#slides) {
 				s.onResize();
@@ -172,7 +172,7 @@ export class SliderSimplex {
 		ro.observe(this.#root);
 
 		switch (this.#effectType) {
-			default      :
+			default      :  // Fallthrough intended
 			case 'fade'  : this.#effect = new TransitionFade(this.#slides, this.#timeTran); break;
 			case 'slide' : this.#effect = new TransitionSlide(this.#slides, this.#timeTran); break;
 			case 'scroll': this.#effect = new TransitionScroll(this.#slides, this.#timeTran); break;
@@ -219,30 +219,31 @@ export class SliderSimplex {
 		if (idx === -1) {
 			idx = wrapAround(this.#curIdx + dir, this.#size);
 		}
-		if (this.#background) this.#background.transition(idx);
-		if (this.#pagination) this.#pagination.transition(idx);
-		if (this.#indicator)  this.#indicator.transition(idx);
-		if (this.#selector)   this.#selector.transition(idx);
+		this.#background?.transition(idx);
+		this.#pagination?.transition(idx);
+		this.#indicator?.transition(idx);
+		this.#selector?.transition(idx);
 
 		this.#effect.transition(idx, dir);
 		this.#curIdx    = idx;
 		this.#isWaiting = true;
 
 		if (1 < this.#size) {
-			const dt: number = this.#slides[idx]!.getDuration(this.#timeDur, this.#timeTran, this.#randomRate);
+			const dt: number = this.#slides[idx]?.getDuration(this.#timeDur, this.#timeTran, this.#randomRate) ?? this.#timeDur;
 			this.#nextStepTime = window.performance.now() + dt * 1000;
 		}
 	}
 
 	private step(): void {
 		if (this.#isWaiting && !this.#effect.isTransitioning()) {
-			if (this.#onTransitionEnd) this.#onTransitionEnd();
+			this.#onTransitionEnd?.();
 			this.#isWaiting = false;
 		}
 		if (window.performance.now() < this.#nextStepTime) {
 			return;
 		}
 		if (!this.#root.classList.contains(CLS_VIEW) || this.#root.classList.contains(CLS_PAUSE)) {
+			this.#nextStepTime = window.performance.now() + 100;
 			return;
 		}
 		this.#nextStepTime = Number.MAX_VALUE;

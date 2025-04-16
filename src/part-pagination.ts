@@ -2,7 +2,7 @@
  * Pagination
  *
  * @author Takuto Yanagida
- * @version 2025-03-22
+ * @version 2025-04-16
  */
 
 const CLS_PAGINATION = 'pagination';
@@ -15,29 +15,20 @@ export class Pagination {
 	#rs: HTMLElement[] = [];
 
 	constructor(root: HTMLElement, size: number, fn: Fn, forced: boolean = true) {
-		let base: HTMLElement = root.querySelector('.' + CLS_PAGINATION) as HTMLElement;
+		let base = root.querySelector('.' + CLS_PAGINATION);
 		if (!base && forced) {
 			base = document.createElement('div');
 			base.classList.add(CLS_PAGINATION);
 			root.appendChild(base);
 		}
-		if (!base) {
-			return;
-		}
-		const e: HTMLElement = this.createElement(base);
+		if (!base) return;
+
+		const e: HTMLOListElement = base.querySelector<HTMLOListElement>(':scope > ol') ?? base.appendChild(document.createElement('ol'))
 		const dir = size === 2 ? 1 : 0;
+
 		for (let i: number = 0; i < size; i += 1) {
 			e.appendChild(this.createBullet(fn, i, dir));
 		}
-	}
-
-	private createElement(base: HTMLElement): HTMLElement {
-		let e: HTMLElement | null = base.querySelector(':scope > ol') as HTMLElement | null;
-		if (!e) {
-			e = document.createElement('ol');
-			base.appendChild(e);
-		}
-		return e;
 	}
 
 	private createBullet(fn: Fn, i: number, dir: -1 | 0 | 1): HTMLElement {
@@ -47,13 +38,10 @@ export class Pagination {
 		return r;
 	}
 
-	transition(i: number): void {
-		for (const r of this.#rs) {
-			r.classList.remove(CLS_VISIBLE);
-		}
-		if (this.#rs[i]) {
-			this.#rs[i].classList.add(CLS_VISIBLE);
-		}
+	transition(idx: number): void {
+		this.#rs.forEach((t, i) => {
+			t.classList.toggle(CLS_VISIBLE, i === idx);
+		});
 	}
 
 }

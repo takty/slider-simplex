@@ -2,7 +2,7 @@
  * Common Functions
  *
  * @author Takuto Yanagida
- * @version 2025-03-29
+ * @version 2025-04-15
  */
 
 export function wrapAround(n: number, size: number): number {
@@ -23,7 +23,7 @@ export function detectTouch(elm: HTMLElement): void {
 	if (0 < navigator.maxTouchPoints) {
 		elm.addEventListener('pointerenter', (e: PointerEvent): void => {
 			const isTouch: boolean = (e.pointerType !== 'mouse');
-			elm.classList[isTouch ? 'add' : 'remove']('touch');
+			elm.classList.toggle('touch', isTouch);
 		});
 	}
 }
@@ -60,17 +60,17 @@ export function callAfterDocumentReady(fn: () => void): void {
 export function initializeViewportDetection(root: HTMLElement, cls: string, offset: number): void {
 	const io = new IntersectionObserver((es: IntersectionObserverEntry[]): void => {
 		for (const e of es) {
-			root.classList[e.isIntersecting ? 'add' : 'remove'](cls);
+			root.classList.toggle(cls, e.isIntersecting);
 		}
 	}, { rootMargin: `${offset}px 0px` });
 	io.observe(root);
 
 	document.addEventListener('visibilitychange', (): void => {
-		const v: boolean = ('hidden' !== document.visibilityState);
+		const v: boolean = 'visible' === document.visibilityState;
 		if (v) {
 			const r: DOMRect = root.getBoundingClientRect();
 			const h: number  = window.innerHeight;
-			if ((0 < r.top && r.top < h) || (0 < r.bottom && r.bottom < h)) {
+			if (r.top < h && 0 < r.bottom) {
 				root.classList.add(cls);
 			}
 		} else {

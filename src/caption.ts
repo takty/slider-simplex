@@ -2,7 +2,7 @@
  * Caption
  *
  * @author Takuto Yanagida
- * @version 2025-03-26
+ * @version 2025-04-16
  */
 
 const CLS_CAPTION = 'caption';
@@ -19,7 +19,7 @@ export class Caption {
 	static create(li: HTMLElement): Caption | null {
 		const elm: HTMLElement | null = li.querySelector(':scope > div, :scope > a > div');
 		if (elm) {
-			 return new Caption(elm as HTMLElement);
+			 return new Caption(elm);
 		}
 		return null;
 	}
@@ -42,8 +42,8 @@ export class Caption {
 		if (base.classList.contains(CLS_CUSTOM))   this.#type = CLS_CUSTOM;
 
 		this.wrap(base);
-		for (const d of base.querySelectorAll(':scope > div')) {
-			this.wrapWithSpan(d as HTMLElement);
+		for (const d of base.querySelectorAll<HTMLElement>(':scope > div')) {
+			this.wrapWithSpan(d);
 		}
 	}
 
@@ -51,7 +51,7 @@ export class Caption {
 		const ns: Node[] = [];
 
 		for (const n of Array.from(elm.childNodes)) {
-			if (1 === n.nodeType) {  // ELEMENT_NODE
+			if (Node.ELEMENT_NODE === n.nodeType) {
 				if ('DIV' === (n as Element).tagName) {
 					this.wrapAndReplaceNodes(elm, ns, n);
 				} else if ('BR' === (n as Element).tagName) {
@@ -95,13 +95,9 @@ export class Caption {
 	}
 
 	onResize(): void {
-		if (window.innerWidth < 600) {
-			this.#base.classList.remove(this.#type);
-			this.#base.classList.add(CLS_SUBTITLE);
-		} else {
-			this.#base.classList.remove(CLS_SUBTITLE);
-			this.#base.classList.add(this.#type);
-		}
+		const isPhone = window.innerWidth < 600;
+		this.#base.classList.remove(isPhone ? this.#type : CLS_SUBTITLE);
+		this.#base.classList.add(isPhone ? CLS_SUBTITLE : this.#type);
 	}
 
 }

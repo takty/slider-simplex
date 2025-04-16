@@ -2,7 +2,7 @@
  * Backgrounds
  *
  * @author Takuto Yanagida
- * @version 2025-03-13
+ * @version 2025-04-16
  */
 
 const CLS_BG      = 'background';
@@ -17,27 +17,18 @@ export class Background {
 		base.classList.add(CLS_BG);
 		root.insertBefore(base, root.firstChild);
 
-		for (const li of lis) {
-			let bg: HTMLElement;
-
-			const img: HTMLElement = li.querySelector('img') as HTMLElement;
-			if (img) {
-				bg = img.cloneNode(false) as HTMLElement;
-			} else {
-				bg = document.createElement('div');
-			}
+		this.#bs = lis.map(li => {
+			const img: HTMLImageElement | null = li.querySelector<HTMLImageElement>('img');
+			const bg: HTMLElement = img ? img.cloneNode(false) as HTMLElement : document.createElement('div');
 			base.appendChild(bg);
-			this.#bs.push(bg);
-		}
+			return bg;
+		});
 	}
 
-	transition(i: number): void {
-		for (const r of this.#bs) {
-			r.classList.remove(CLS_VISIBLE);
-		}
-		if (this.#bs[i]) {
-			this.#bs[i].classList.add(CLS_VISIBLE);
-		}
+	transition(idx: number): void {
+		this.#bs.forEach((t, i) => {
+			t.classList.toggle(CLS_VISIBLE, i === idx);
+		});
 	}
 
 }

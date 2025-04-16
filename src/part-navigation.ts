@@ -2,11 +2,12 @@
  * Navigation Buttons
  *
  * @author Takuto Yanagida
- * @version 2025-04-04
+ * @version 2025-04-16
  */
 
 const CLS_NAVIGATION = 'navigation';
 const CLS_ACTIVE     = 'active';
+const CLS_TOUCH      = 'touch';
 
 const DX_FLICK: number = 32;
 
@@ -18,84 +19,95 @@ export class Navigation {
 	#bs!: HTMLElement[];
 
 	constructor(root: HTMLElement, timeTran: number, fn: Fn, forced: boolean = true) {
-		let base: HTMLElement = root.querySelector('.' + CLS_NAVIGATION) as HTMLElement;
+		let base = root.querySelector<HTMLElement>('.' + CLS_NAVIGATION);
 		if (!base && forced) {
 			base = document.createElement('div');
 			base.classList.add(CLS_NAVIGATION);
 			root.appendChild(base);
 		}
-		if (!base) {
-			return;
-		}
+		if (!base) return;
+
 		this.#fs = [
 			(): void => fn(-1, -1),
 			(): void => fn(-1,  1),
 		];
 		this.#bs = this.createButtons(base);
 
-		base.addEventListener('mouseenter', (): void => this.setActive(!root.classList.contains('touch')));
+		base.addEventListener('mouseenter', (): void => this.setActive(!root.classList.contains(CLS_TOUCH)));
 		base.addEventListener('mouseleave', (): void => this.setActive(false));
 
 		this.initializeFlick(root, timeTran * 1000 / 2);
 	}
 
-	private createButtons(base: HTMLElement): HTMLElement[] {
-		let bs: HTMLElement[] = Array.from(base.querySelectorAll(':scope > button')) as HTMLElement[];
+	private createButtons(base: HTMLElement): HTMLButtonElement[] {
+		let bs: HTMLButtonElement[] = Array.from(base.querySelectorAll<HTMLButtonElement>(':scope > button'));
+
 		if (bs.length !== 2) {
-			const b0: HTMLElement = document.createElement('button');
-			const b1: HTMLElement = document.createElement('button');
+			const b0: HTMLButtonElement = document.createElement('button');
+			const b1: HTMLButtonElement = document.createElement('button');
 			base.appendChild(b0);
 			base.appendChild(b1);
 			bs = [b0, b1];
 		}
-		for (let i: number = 0; i < bs.length; i += 1) {
-			bs[i]!.classList.add(CLS_NAVIGATION);
-			bs[i]!.addEventListener('click', (): void => this.doClick(i));
-		}
+		bs.forEach((b, i) => {
+			b.classList.add(CLS_NAVIGATION);
+			b.addEventListener('click', (): void => this.doClick(i));
+		});
 		return bs;
 	}
 
 	private doClick(dir: number): void {
-		this.#fs[dir]!();
+		this.#fs[dir]?.();
 	}
 
 	private setActive(flag: boolean): void {
 		for (const b of this.#bs) {
-			b.classList[flag ? 'add' : 'remove'](CLS_ACTIVE);
+			b.classList.toggle(CLS_ACTIVE, flag);
 		}
 	}
 
 	private initializeFlick(base: HTMLElement, delay: number): void {
-		const sts: number[] = [0, 0];
-		let px: number = Number.NaN;
+		const sts: [number, number] = [0, 0];
+		let px: number | null = null;
 
 		base.addEventListener('touchstart', (e: TouchEvent): void => {
-			px = e.touches[0]!.pageX;
-		});
+			if (e.touches.length === 1) {
+				px = e.touches[0]?.pageX ?? null;
+			} else {
+				px = null;
+			}
+		}, { passive: true });
 		base.addEventListener('touchmove', (e: TouchEvent): void => {
-			const dir: number = this.getFlickDir(px, e);
-			if (dir !== -1 && this.#fs[dir]) {
-				if (true === e.cancelable) {
+			if (px === null || e.touches.length !== 1) return;
+
+			const dir: number = this.getFlickDir(px, e.touches[0]);
+			if (dir !== -1) {
+				if (e.cancelable) {
 					e.preventDefault();
 				}
-				this.#fs[dir]();
-				if (this.#bs[dir]) {
+				this.#fs[dir]?.();
+
+				const b = this.#bs[dir];
+				if (b) {
 					clearTimeout(sts[dir]);
-					this.#bs[dir].classList.add(CLS_ACTIVE);
-					sts[dir] = setTimeout((): void => this.#bs[dir]!.classList.remove(CLS_ACTIVE), delay);
+					b.classList.add(CLS_ACTIVE);
+					sts[dir] = setTimeout((): void => b.classList.remove(CLS_ACTIVE), delay);
 				}
-				px = Number.NaN;
+				px = null;
 			}
-		});
-		base.addEventListener('touchend', (): void => {
-			px = Number.NaN;
-		});
+		}, { passive: false });
+
+		const resetTouch = (): void => {
+			px = null;
+		};
+		base.addEventListener('touchend', resetTouch, { passive: true });
+		base.addEventListener('touchcancel', resetTouch, { passive: true });
 	}
 
-	private getFlickDir(px: number, e: TouchEvent): number {
-		if (Number.isNaN(px)) return -1;
-		const x: number = e.changedTouches[0]!.pageX;
+	private getFlickDir(px: number, t: Touch | undefined): number {
+		if (px === null || !t) return -1;
 
+		const x: number = t.pageX;
 		if (px + DX_FLICK < x) return 0;  // ->
 		if (x < px - DX_FLICK) return 1;  // <-
 		return -1;
