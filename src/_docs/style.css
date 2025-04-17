@@ -1,0 +1,98 @@
+/**
+ * Styles for Sample
+ *
+ * @author Takuto Yanagida
+ * @version 2025-04-17
+ */
+
+:root {
+	font-size  : 16px;
+	font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+
+body {
+	min-height    : 200vh;
+	padding-top   : 4vh;
+	padding-bottom: 4vh;
+	overflow-x    : hidden;
+
+	background-color: #fff;
+}
+
+h1 small {
+	font-size: small;
+}
+
+pre {
+	margin: 0;
+	overflow-x: auto;
+}
+
+.content {
+	margin-inline: auto;
+	max-width: 48rem;
+	width    : calc(100% - 2vw);
+
+	color: hsla(0, 0%, 0%, 0.75);
+}
+
+
+/* -------------------------------------------------------------------------- */
+
+
+.frame-hero {
+	width   : 100%;
+	position: relative;
+
+	&:before {
+		content     : '';
+		display     : block;
+		aspect-ratio: 3 / 1;
+	}
+}
+
+.frame-hero > *:first-child,
+.frame-hero-front,
+.frame-hero-front pre {
+	position: absolute;
+	inset: 0;
+}
+
+.frame-hero-front {
+	overflow-y: auto;
+	color     : #fff;
+
+	pre { background-color: transparent; }
+}
+
+.slider-simplex {
+	margin-inline: calc(50% - 50vw + 1rem) calc(50% - 50vw + 1rem);
+}
+
+.slide-buttons {
+	display        : flex;
+	justify-content: center;
+	gap            : 1rem;
+
+	list-style-type: none;
+	padding        : 0;
+
+	button {
+		width : 5rem;
+		height: 3rem;
+	}
+}
+
+.slider-simplex.ecs {
+	--size-width : 24rem;
+	--slide-ratio: 1;
+
+	.slides > li {
+		border    : 2rem solid transparent;
+		transition: border-width 1s;
+
+		&:is([data-state='in'], [data-state='display']) {
+			border-width: 0;
+		}
+	}
+}
