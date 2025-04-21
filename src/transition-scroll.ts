@@ -2,7 +2,7 @@
  * Transition - Scroll
  *
  * @author Takuto Yanagida
- * @version 2025-04-16
+ * @version 2025-04-21
  */
 
 import { wrapAround, repeatAnimationFrame, snapToBinary } from './common';
@@ -16,7 +16,7 @@ export class TransitionScroll extends Transition {
 	#timeTran: number;
 	#current : number = 0;
 	#shift   : number = 0;
-	#speed   : number = 0;
+	#speed   : number = 1;
 
 	#sideSize: number = 2;
 
