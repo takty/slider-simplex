@@ -10,11 +10,7 @@ export default defineConfig({
 
 		rollupOptions: {
 			input: {
-				main       : resolve('src/_docs', 'index.html'),
-				show_fade  : resolve('src/_docs', 'show-fade.html'),
-				show_slide : resolve('src/_docs', 'show-slide.html'),
-				show_scroll: resolve('src/_docs', 'show-scroll.html'),
-				hero       : resolve('src/_docs', 'hero.html'),
+				main: resolve('src/_docs', 'index.html'),
 			}
 		}
 	},

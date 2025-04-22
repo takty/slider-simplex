@@ -1,30 +1,399 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<meta charset="utf-8">
-<title>Slider Simplex - Sample</title>
-<meta name="description" content="Samples of the Slider Simplex">
-<meta name="author" content="">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" crossorigin href="./assets/style-DNnB329R.css">
+	<meta charset="utf-8">
+	<title>Slider Simplex - Sample</title>
+	<meta name="description" content="Samples of the Slider Simplex">
+	<meta name="author" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+  <script type="module" crossorigin src="./assets/main-mJ7Yeuzk.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/main-CPCzjnTg.css">
 </head>
+
 <body>
+	<style>
+		/* Style element must be here because of vite! */
+	</style>
 
-<div class="content">
-	<h1>Slider Simplex</h1>
+	<header>
+		<h1>Slider Simplex</h1>
+	</header>
 
-	<h2>Slider Simplex - Hero</h2>
-	<ul>
-		<li><a href="hero.html">Sample (Hero)</a></li>
-	</ul>
+	<main>
+		<h2>Effects</h2>
 
-	<h2>Slider Simplex - Show</h2>
-	<ul>
-		<li><a href="show-fade.html">Sample (Show - Fade)</a></li>
-		<li><a href="show-slide.html">Sample (Show - Slide)</a></li>
-		<li><a href="show-scroll.html">Sample (Show - Scroll)</a></li>
-	</ul>
-</div>
+		<h3>Fade</h3>
 
+		<section class="slider-simplex fade" id="effect-fade">
+			<div class="frame">
+				<ul class="slides">
+					<li>
+						<img src="https://placehold.jp/f99/666/1200x900.png">
+						<div>'subtitle' style caption</div>
+					</li>
+					<li>
+						<a href="https://example.com">
+							<img src="https://placehold.jp/9d9/666/1200x900.png">
+							<div>'subtitle' style caption</div>
+						</a>
+					</li>
+					<li>
+						<img src="https://placehold.jp/99f/666/1200x900.png">
+						<div>'subtitle' style caption</div>
+					</li>
+				</ul>
+			</div>
+		</section>
+
+		<h3>Slide</h3>
+
+		<section class="slider-simplex slide" id="effect-slide">
+			<div class="frame">
+				<ul class="slides">
+					<li>
+						<img src="https://placehold.jp/f99/666/1200x900.png">
+						<div>'subtitle' style caption</div>
+					</li>
+					<li>
+						<a href="https://example.com">
+							<img src="https://placehold.jp/9d9/666/1200x900.png">
+							<div>'subtitle' style caption</div>
+						</a>
+					</li>
+					<li>
+						<img src="https://placehold.jp/99f/666/1200x900.png">
+						<div>'subtitle' style caption</div>
+					</li>
+				</ul>
+			</div>
+		</section>
+
+		<h3>Scroll</h3>
+
+		<section class="slider-simplex scroll" id="effect-scroll">
+			<div class="frame">
+				<ul class="slides">
+					<li>
+						<img src="https://placehold.jp/f99/666/1200x900.png" class="scroll">
+						<div>'subtitle' style caption</div>
+					</li>
+					<li>
+						<a href="https://example.com">
+							<img src="https://placehold.jp/9d9/666/1200x900.png">
+							<div>'subtitle' style caption</div>
+						</a>
+					</li>
+					<li>
+						<img src="https://placehold.jp/99f/666/1200x900.png">
+						<div>'subtitle' style caption</div>
+					</li>
+				</ul>
+			</div>
+		</section>
+
+		<hr><!-- ----------------------------------------------------------- -->
+
+		<h2>Caption Types</h2>
+
+		<h3>Line</h3>
+
+		<section class="slider-simplex fade" id="caption-line">
+			<div class="frame">
+				<ul class="slides">
+					<li>
+						<img src="https://placehold.jp/f99/666/1200x900.png">
+						<div class="line">
+							<div>'line' style caption</div>
+							<div>The second line</div>
+						</div>
+					</li>
+					<li>
+						<a href="https://example.com">
+							<img src="https://placehold.jp/9d9/666/1200x900.png">
+							<div class="line">
+								<div>'line' style caption</div>
+								<div>The second line</div>
+							</div>
+						</a>
+					</li>
+				</ul>
+			</div>
+		</section>
+
+		<h3>Circle</h3>
+
+		<section class="slider-simplex fade" id="caption-circle">
+			<div class="frame">
+				<ul class="slides">
+					<li>
+						<img src="https://placehold.jp/f99/666/1200x900.png">
+						<div class="circle">
+							<div>'circle' style caption</div>
+							<div>The second line</div>
+						</div>
+					</li>
+					<li>
+						<a href="https://example.com">
+							<img src="https://placehold.jp/9d9/666/1200x900.png">
+							<div class="circle">
+								<div>'circle' style caption</div>
+								<div>The second line</div>
+							</div>
+						</a>
+					</li>
+				</ul>
+			</div>
+		</section>
+
+		<h3>Subtitle</h3>
+
+		<section class="slider-simplex fade" id="caption-subtitle">
+			<div class="frame">
+				<ul class="slides">
+					<li>
+						<img src="https://placehold.jp/99f/666/1200x900.png">
+						<div class="subtitle">
+							<div>'subtitle' style caption</div>
+							<div>The second line</div>
+						</div>
+					</li>
+					<li>
+						<a href="https://example.com">
+							<img src="https://placehold.jp/ff9/666/1200x900.png">
+							<div class="subtitle">
+								<div>'subtitle' style caption</div>
+								<div>The second line</div>
+							</div>
+						</a>
+					</li>
+				</ul>
+			</div>
+		</section>
+
+		<hr><!-- ----------------------------------------------------------- -->
+
+		<h2>Slide Types</h2>
+
+		<h3>Video</h3>
+
+		<section class="slider-simplex slide" id="slide-video">
+			<div class="frame">
+				<ul class="slides">
+					<li>
+						<a href="https://example.com">
+							<video><source src="./assets/sample-G9Qm1DeT.mp4"></video>
+							<div>'subtitle' style caption</div>
+						</a>
+					</li>
+					<li>
+						<img src="https://picsum.photos/seed/1/640/480">
+						<div class="slider-simplex-caption">
+							'subtitle' style caption
+						</div>
+					</li>
+				</ul>
+			</div>
+		</section>
+
+		<h3>Scroll</h3>
+
+		<section class="slider-simplex fade" id="slide-scroll">
+			<div class="frame">
+				<ul class="slides">
+					<li class="scroll">
+						<img src="https://picsum.photos/seed/1/480/640">
+						<div>'subtitle' style caption</div>
+					</li>
+					<li class="scroll">
+						<a href="https://example.com">
+							<img src="https://picsum.photos/seed/2/480/640">
+							<div>'subtitle' style caption</div>
+						</a>
+					</li>
+				</ul>
+			</div>
+		</section>
+
+		<h3>Dual</h3>
+
+		<section class="slider-simplex slide" id="slide-dual">
+			<div class="frame">
+				<ul class="slides">
+					<li>
+						<img src="https://picsum.photos/seed/1/480/640">
+						<img src="https://picsum.photos/seed/2/480/640">
+						<div>'subtitle' style caption</div>
+					</li>
+					<li>
+						<a href="https://example.com">
+							<img src="https://picsum.photos/seed/3/480/640">
+							<img src="https://picsum.photos/seed/4/480/640">
+							<div>'subtitle' style caption</div>
+						</a>
+					</li>
+				</ul>
+			</div>
+		</section>
+
+		<hr><!-- ----------------------------------------------------------- -->
+
+		<h2>Misc.</h2>
+
+		<h3>With Indicator</h3>
+
+		<section class="slider-simplex slide" id="misc-indicator">
+			<div class="frame">
+				<ul class="slides">
+					<li>
+						<img src="https://placehold.jp/f99/666/1200x900.png">
+						<div>The 1st slide.</div>
+					</li>
+					<li>
+						<img src="https://placehold.jp/9d9/666/1200x900.png">
+						<div>The 2nd slide.</div>
+					</li>
+					<li>
+						<img src="https://placehold.jp/99f/666/1200x900.png">
+						<div>The 3rd slide.</div>
+					</li>
+				</ul>
+			</div>
+			<style>
+				#misc-indicator .indicator {
+					grid-area: 1/2/2/3;
+					z-index  : 1;
+					pointer-events: none;;
+
+					padding    : 0.25rem;
+					line-height: 1;
+					text-shadow: #fff 0 0 1px;
+				}
+			</style>
+			<div class="indicator">
+				<span class="slide-index"></span>/<span class="slide-count"></span>
+			</div>
+		</section>
+
+		<h3>With Selector</h3>
+
+		<section class="slider-simplex slide" id="misc-selector">
+			<div class="frame">
+				<ul class="slides">
+					<li>
+						<img src="https://placehold.jp/f99/666/1200x900.png">
+						<div>The 1st slide.</div>
+					</li>
+					<li>
+						<img src="https://placehold.jp/9d9/666/1200x900.png">
+						<div>The 2nd slide.</div>
+					</li>
+					<li>
+						<img src="https://placehold.jp/99f/666/1200x900.png">
+						<div>The 3rd slide.</div>
+					</li>
+				</ul>
+			</div>
+			<div class="selector"></div>
+		</section>
+
+		<h3>With Buttons</h3>
+
+		<section class="slider-simplex slide" id="misc-buttons">
+			<div class="frame">
+				<ul class="slides">
+					<li>
+						<img src="https://placehold.jp/f99/666/1200x900.png">
+						<div>The 1st slide.</div>
+					</li>
+					<li>
+						<img src="https://placehold.jp/9d9/666/1200x900.png">
+						<div>The 2nd slide.</div>
+					</li>
+					<li>
+						<img src="https://placehold.jp/99f/666/1200x900.png">
+						<div>The 3rd slide.</div>
+					</li>
+				</ul>
+			</div>
+		</section>
+
+		<ul class="slide-buttons">
+			<li><button type="button" onclick="fn.move(0);">Move to 1st Slide</button></li>
+			<li><button type="button" onclick="fn.move(1);">Move to 2nd Slide</button></li>
+			<li><button type="button" onclick="fn.move(2);">Move to 3rd Slide</button></li>
+		</ul>
+
+		<hr><!-- ----------------------------------------------------------- -->
+
+		<h2>Styles</h2>
+
+		<h3>Enlarge the center slide</h3>
+
+		<section class="slider-simplex ecs scroll" id="style-enlarge">
+			<div class="frame">
+				<ul class="slides">
+					<li class="scroll">
+						<img src="https://picsum.photos/seed/1/640/480">
+						<div class="line">
+							<div>'line' style caption</div>
+							<div>The second line</div>
+						</div>
+					</li>
+					<li>
+						<img src="https://picsum.photos/seed/2/640/480">
+						<div class="circle">
+							<div>'circle' style caption</div>
+							<div>The second line</div>
+						</div>
+					</li>
+					<li>
+						<img src="https://picsum.photos/seed/3/640/480">
+						<div>
+							'subtitle' style caption
+						</div>
+					</li>
+					<li>
+						<img src="https://picsum.photos/seed/4/640/480">
+						<div>
+							'subtitle' style caption
+						</div>
+					</li>
+					<li>
+						<img src="https://picsum.photos/seed/5/640/480">
+						<div>
+							'subtitle' style caption
+						</div>
+					</li>
+				</ul>
+			</div>
+		</section>
+
+		<h3>Hero style</h3>
+
+		<div class="frame-hero">
+			<section class="slider-simplex fade" id="style-hero">
+				<div class="frame">
+					<ul class="slides">
+						<li>
+							<img src="https://picsum.photos/seed/1/640/480">
+						</li>
+						<li>
+							<img src="https://picsum.photos/seed/2/640/480">
+						</li>
+						<li>
+							<img src="https://picsum.photos/seed/3/640/480">
+						</li>
+					</ul>
+				</div>
+			</section>
+		</div>
+	</main>
+
+	<footer>
+		<hr>
+		<nav><a href="https://takty.net/">takty.net</a></nav>
+	</footer>
 </body>
+
 </html>
