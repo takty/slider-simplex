@@ -18,8 +18,6 @@
 	.slider-simplex {
 		position: absolute;
 		inset   : 0;
-
-		--size-width : auto;
 	}
 }
 
