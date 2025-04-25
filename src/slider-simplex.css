@@ -2,10 +2,199 @@
  * Slider Simplex
  *
  * @author Takuto Yanagida
- * @version 2025-04-21
+ * @version 2025-04-25
  */
 
 @layer slider-simplex {
+	@property --effect-type {
+		syntax       : "fade|slide|scroll";
+		inherits     : true;
+		initial-value: slide;
+	}
+	@property --duration-time {
+		syntax       : "<time>";
+		inherits     : true;
+		initial-value: 8s;
+	}
+	@property --transition-time {
+		syntax       : "<time>";
+		inherits     : true;
+		initial-value: 1s;
+	}
+	@property --randomize-timing {
+		syntax       : "true|false";
+		inherits     : true;
+		initial-value: false;
+	}
+
+	@property --show-background {
+		syntax       : "true|false";
+		inherits     : true;
+		initial-value: false;
+	}
+	@property --show-side-slide {
+		syntax       : "true|false";
+		inherits     : true;
+		initial-value: false;
+	}
+
+	@property --create-navigation {
+		syntax       : "true|false";
+		inherits     : true;
+		initial-value: true;
+	}
+	@property --create-pagination {
+		syntax       : "true|false";
+		inherits     : true;
+		initial-value: true;
+	}
+	@property --create-selector {
+		syntax       : "true|false";
+		inherits     : true;
+		initial-value: false;
+	}
+
+	@property --size-width {
+		syntax       : "*";
+		inherits     : true;
+		initial-value: 48rem;
+	}
+	@property --size-height-min {
+		syntax       : "*";
+		inherits     : true;
+		initial-value: 14rem;
+	}
+	@property --size-height-max {
+		syntax       : "*";
+		inherits     : true;
+		initial-value: 80vh;
+	}
+
+	@property --slide-ratio {
+		syntax       : "*";
+		inherits     : true;
+		initial-value: 12/5;
+	}
+	@property --slide-fit {
+		syntax       : "contain|cover|fill|none|scale-down";
+		inherits     : true;
+		initial-value: cover;
+	}
+	@property --slide-zoom {
+		syntax       : "<number>";
+		inherits     : true;
+		initial-value: 1.05;
+	}
+	@property --slide-color-dual {
+		syntax       : "<color>";
+		inherits     : true;
+		initial-value: #fff6;
+	}
+
+	@property --color-frame {
+		syntax       : "<color>";
+		inherits     : true;
+		initial-value: #fff6;
+	}
+
+	@property --caption-color {
+		syntax       : "<color>";
+		inherits     : true;
+		initial-value: #fff;
+	}
+	@property --caption-color-bg {
+		syntax       : "<color>";
+		inherits     : true;
+		initial-value: #0006;
+	}
+	@property --caption-shadow {
+		syntax       : "*";
+		inherits     : true;
+		initial-value: 0 0 0.5rem #000;
+	}
+	@property --caption-font-size-line {
+		syntax       : "*";
+		inherits     : true;
+		initial-value: 1.85rem;
+	}
+	@property --caption-font-size-circle {
+		syntax       : "*";
+		inherits     : true;
+		initial-value: 1.85rem;
+	}
+	@property --caption-font-size-subtitle {
+		syntax       : "*";
+		inherits     : true;
+		initial-value: 1rem;
+	}
+
+	@property --btn-size {
+		syntax       : "*";
+		inherits     : true;
+		initial-value: 2rem;
+	}
+	@property --btn-size-mark {
+		syntax       : "*";
+		inherits     : true;
+		initial-value: 0.75rem;
+	}
+	@property --btn-color {
+		syntax       : "<color>";
+		inherits     : true;
+		initial-value: transparent;
+	}
+	@property --btn-color-hover {
+		syntax       : "<color>";
+		inherits     : true;
+		initial-value: #0006;
+	}
+	@property --btn-mark-color {
+		syntax       : "<color>";
+		inherits     : true;
+		initial-value: #fffa;
+	}
+	@property --btn-mark-path {
+		syntax       : "*";
+		inherits     : true;
+		initial-value: polygon(30% 10%, 30% 90%, 95% 50%);
+	}
+
+	@property --rivet-size-width {
+		syntax       : "*";
+		inherits     : true;
+		initial-value: 0.5rem;
+	}
+	@property --rivet-size-height {
+		syntax       : "*";
+		inherits     : true;
+		initial-value: 0.5rem;
+	}
+	@property --rivet-size-area-width {
+		syntax       : "*";
+		inherits     : true;
+		initial-value: 1.5rem;
+	}
+	@property --rivet-size-area-height {
+		syntax       : "*";
+		inherits     : true;
+		initial-value: 1.5rem;
+	}
+	@property --rivet-color {
+		syntax       : "<color>";
+		inherits     : true;
+		initial-value: #fffe;
+	}
+	@property --rivet-color-selected {
+		syntax       : "<color>";
+		inherits     : true;
+		initial-value: #bbbe;
+	}
+	@property --rivet-shadow {
+		syntax       : "*";
+		inherits     : true;
+		initial-value: 0 1px 2px #0006 inset;
+	}
+
 	.slider-simplex {
 		--effect-type     : slide;
 		--duration-time   : 8s;
@@ -53,6 +242,32 @@
 		--rivet-color           : #fffe;
 		--rivet-color-selected  : #bbbe;
 		--rivet-shadow          : 0 1px 2px #0006 inset;
+
+		&.fill {
+			--show-background: false;
+			--show-side-slide: false;
+
+			--create-navigation: false;
+			--create-pagination: false;
+
+			--size-width	 : auto;
+			--size-height-min: auto;
+			--size-height-max: auto;
+			--slide-ratio    : auto;
+
+			grid-template-columns: auto;
+
+			.frame {
+				position: absolute;
+				inset   : 0;
+
+				grid-area: 1/1/2/2;
+
+				&::before {
+					content: none;
+				}
+			}
+		}
 	}
 
 
