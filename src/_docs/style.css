@@ -2,48 +2,30 @@
  * Styles for Sample
  *
  * @author Takuto Yanagida
- * @version 2025-04-17
+ * @version 2025-04-25
  */
 
 .frame-hero {
 	width   : 100%;
 	position: relative;
 
-	&:before {
+	&::before {
 		content     : '';
 		display     : block;
 		aspect-ratio: 3 / 1;
 	}
 
 	.slider-simplex {
-		--show-background: false;
-		--show-side-slide: false;
+		position: absolute;
+		inset   : 0;
 
-		--create-navigation: false;
-		--create-pagination: false;
-
-		--size-height-min: unset;
-		--size-height-max: unset;
-		--slide-ratio    : unset;
-
-		grid-template-rows: auto;
-		.frame {
-			position: absolute;
-			inset   : 0;
-		}
+		--size-width : auto;
 	}
 }
 
-.frame-hero > *:first-child {
-	position: absolute;
-	inset   : 0;
-}
-
-.slider-simplex {
+.slider-simplex:not(.fill) {
 	margin-inline: calc(50% - 50vw + 1rem) calc(50% - 50vw + 1rem);
-	--size-width: 24rem;
-	/* --size-height-min: 8rem;
-	--slide-ratio: 3/1; */
+	--size-width : 24rem;
 }
 
 .slider-simplex.fade { --effect-type: fade; }
