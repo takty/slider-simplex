@@ -32,9 +32,9 @@
 	},
 	"packageManager": "yarn@1.22.22",
 	"devDependencies": {
-		"esbuild": "^0.25.3",
+		"esbuild": "^0.25.4",
 		"klales": "github:takty/klales",
 		"typescript": "^5.8.3",
-		"vite": "^6.3.3"
+		"vite": "^6.3.5"
 	}
 }
